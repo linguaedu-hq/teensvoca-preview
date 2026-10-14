@@ -52,11 +52,14 @@ input[aria-invalid="true"]{border-color:var(--red)}
 .other{margin-top:14px;min-height:44px;padding:0 4px;border:0;background:none;color:var(--b-ink);font:inherit;font-size:15px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 @media(max-width:420px){.card{padding:30px 18px 28px 62px}.stamp{right:-6px;top:6px;transform:rotate(11deg) scale(.82)}.logo{font-size:29px}}
 @media (prefers-reduced-motion:reduce){.stamp path{animation:none;opacity:1;stroke-dashoffset:0}.stamp span{animation:none;clip-path:none}.inkline path{animation:none;opacity:1;stroke-dashoffset:0}.go,.go svg{transition:none}}
+
+/* 링구아 틴즈 공식 로고(대표 10-14) */
+.teens-logo{display:block;height:52px;width:auto;margin-bottom:4px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="1" seed="4"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter></svg>
 <main class="card" id="card">
   <div class="stamp" aria-hidden="true"><svg viewBox="0 0 92 80"><path pathLength="1" d="M18 22 C30 6 70 4 84 24 C96 42 78 70 48 74 C20 77 4 60 7 40 C9 28 20 16 36 12"/></svg><span>100<br>점!</span></div>
-  <p class="logo">Lingua <b>Teens</b><small>Voca Check</small></p>
+  <p class="logo"><img class="teens-logo" src="assets/lingua_teens_logo.svg" alt="Lingua Teens" width="214" height="60"><small>Voca Check</small></p>
   <span class="tag">오늘 단어시험, 바로 채점해요</span>
   <form class="form" id="f" novalidate>
     <h1>학생 · 학부모 로그인<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6 C25 2 55 9 98 4" fill="none" stroke="#fcd377" stroke-width="5" stroke-linecap="round"/></svg></h1>
