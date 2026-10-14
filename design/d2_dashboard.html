@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
-<title>내 단어시험 | Lingua Teens Voca</title>
+<title>내 단어시험 (기록 칸 A안) | Lingua Teens Voca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Caveat:wght@700&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
@@ -174,47 +174,26 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 .miss .none{margin:0;color:var(--mute);font-size:15px}
 
 /*REC-CSS*/
-/* 기록 칸(기본 · 대표가 고르기 전까지 지금 꼴). 빨강은 빼고, 알약 탭·덧그림자·범례 줄을 걷어 냄 */
-.panel{background:var(--paper);border-radius:3px;padding:14px 18px 18px;box-shadow:var(--shadow-paper)}
-.tabs{display:flex;gap:24px;margin:0 0 16px;padding:0 2px;border-bottom:1px solid var(--rule)}
-.tabs button{position:relative;min-height:44px;padding:0 2px;font-family:Jua;font-size:18px;border:0;background:transparent;color:var(--mute);cursor:pointer;transition:color .15s ease}
-.tabs button:hover{color:var(--ink)}
-.tabs button[aria-selected="true"]{color:var(--ink)}
-.tabs button[aria-selected="true"]::after{content:"";position:absolute;left:-3px;right:-3px;bottom:-2px;height:4px;border-radius:3px;background:var(--b-ink);transform:rotate(-1.2deg)}
-.head{display:grid;grid-template-columns:128px 1fr;align-items:center;gap:16px}
-.head svg{width:128px;height:128px;display:block}
-.head .arc{animation:arc .6s var(--ease-out) both}
-@keyframes arc{from{stroke-dashoffset:var(--c)}}
-.head .avg-tick{stroke:var(--brown);stroke-width:3.5;stroke-linecap:round}
-.head .big{font-family:Caveat;font-size:40px;fill:var(--b-ink)}
-.head .none{font-family:"Nanum Pen Script";font-size:26px;fill:var(--mute)}
-.facts h3{font-family:Jua;font-weight:400;font-size:18px;margin:0 0 6px}
-.facts p{margin:0;color:var(--mute);font-size:15px}
-.vs{display:flex;gap:18px;align-items:flex-end}
-.vs span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
-.vs em{font-style:normal;font-size:14px;color:var(--mute);white-space:nowrap}
-.vs b{font-family:Caveat;font-weight:700;font-size:34px}
-.vs .me b{color:var(--b-ink)}.vs .lv b{color:var(--brown)}
-.facts .cq{margin-top:6px;color:var(--ink)}
-.facts .diff{font-size:14px}
-.facts .diff.up{color:var(--g-ink)}
-.bars{margin-top:14px;display:grid;gap:2px}
-.br{display:grid;grid-template-columns:72px 1fr 76px;align-items:center;gap:10px;min-height:46px;font-size:15px}
-.br .k{color:var(--mute);white-space:nowrap;line-height:1.2}
-.br .k small{display:block;font-size:13px}
-.br .t{position:relative;height:22px;display:flex;align-items:center}
-.br .tr{display:block;width:100%;height:12px;border-radius:6px;background:var(--track);overflow:hidden}
-.br .tr i{display:block;height:100%;border-radius:6px;background:var(--y2);transform-origin:left;animation:grow .45s var(--ease-out) both;animation-delay:calc(var(--i) * 30ms)}
-.br .t s{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--brown);box-shadow:0 0 0 1.5px var(--paper)}
-.br .v{text-align:right;line-height:1.05}
-.br .v b{display:block;font-family:Caveat;font-size:24px;color:var(--ink);font-weight:700}
-.br .v small{font-size:13px;color:var(--mute);white-space:nowrap}
-.br.cur .k{color:var(--ink);font-family:Jua}
-.br.cur .tr i{background:var(--b-ink)}
-.br.cur .v b{color:var(--b-ink)}
-@keyframes grow{from{transform:scaleX(0)}}
-@media (max-width:420px){.head{grid-template-columns:112px 1fr;gap:12px}.head svg{width:112px;height:112px}.panel{padding:12px 14px 16px}}
-@media (prefers-reduced-motion:reduce){.head .arc,.br .tr i{animation:none}}
+/* 기록 칸 A · 통지표 : 세 기간을 한 표에. 그림 없이 숫자를 크게 */
+.rec{background:var(--paper);border-radius:3px;box-shadow:var(--shadow-paper);padding:16px 18px 16px}
+.rec-t{font-family:Jua;font-weight:400;font-size:20px;line-height:1.2;margin:0 0 8px}
+.rc{width:100%;border-collapse:collapse;table-layout:fixed}
+.rc col.c1{width:40%}.rc col.c2{width:32%}
+.rc thead th{font-weight:400;font-size:13px;color:var(--mute);text-align:right;padding:0 0 6px;border-bottom:3px double var(--paper-edge)}
+.rc thead th.c-me{color:var(--b-ink);font-family:Jua;font-size:15px}
+.rc thead th.c-lv{color:var(--brown);font-family:Jua;font-size:15px}
+.rc tbody th{font-family:Jua;font-weight:400;font-size:19px;line-height:1.2;text-align:left;padding:14px 0 0;vertical-align:top}
+.rc tbody th small{display:block;margin-top:3px;font-family:"Gowun Dodum";font-size:13px;color:var(--mute)}
+.rc td{text-align:right;vertical-align:top;padding:6px 0 0 6px;white-space:nowrap}
+.rc .me{font-family:Caveat;font-weight:700;font-size:54px;line-height:1;color:var(--b-ink)}
+.rc .lv{font-family:Caveat;font-weight:700;font-size:30px;line-height:1.6;color:var(--brown)}
+.rc .u{font-size:.48em;margin-left:1px}
+.rc .wait{font-family:"Nanum Pen Script";font-weight:400;font-size:28px;line-height:1.9;color:var(--mute)}
+.rc .say td{text-align:left;padding:0 0 12px;font-family:"Nanum Pen Script";font-size:25px;line-height:1.1;color:var(--brown);border-bottom:1px solid var(--rule)}
+.rc .say.up td{color:var(--g-ink)}
+.rc tbody:last-of-type .say td{border-bottom:0;padding-bottom:4px}
+.rc tbody.cur th{color:var(--ink)}
+@media (max-width:420px){.rec{padding:14px 14px 12px}.rc .me{font-size:48px}}
 /*/REC-CSS*/
 
 .note{margin-top:28px;font-size:13px;color:var(--mute);text-align:center}
@@ -251,8 +230,8 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
   <div class="side">
   <section class="memo" id="memo" aria-labelledby="memo-title" hidden></section>
 <!--REC-HTML-->
-  <section class="panel" aria-label="정답률 기록">
-    <div class="tabs" id="tabs" role="tablist" aria-label="기간"><button role="tab" data-k="day" aria-selected="true">오늘</button><button role="tab" data-k="week" aria-selected="false">주별</button><button role="tab" data-k="month" aria-selected="false">월별</button></div>
+  <section class="rec" aria-labelledby="rec-title">
+    <h2 class="rec-t" id="rec-title">정답률</h2>
     <div id="stat" aria-live="polite"></div>
   </section>
 <!--/REC-HTML-->
@@ -418,34 +397,17 @@ function missBlock(title, ds){
 }
 
 //REC-JS-START
-function weekOf(d){ const mon = mondayOf(d); return `${mon.getMonth()+1}/${mon.getDate()} 주`; }
 function renderStat(){
-  $("tabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.k === tab)));
-  const done = API.history.filter(isGraded).map(d => ({ d, r: API.result(d) }));
-  let groups, curKey;
-  if (tab === "day") { groups = done.slice(-7).map(x => [TV.label(x.d), [x.r], x.d, [x.d]]); curKey = day; }
-  else { const m = new Map(); done.forEach(x => { const k = tab === "week" ? weekOf(x.d) : `${+x.d.slice(0,2)}월`; if (!m.has(k)) m.set(k, { rs: [], ds: [] }); m.get(k).rs.push(x.r); m.get(k).ds.push(x.d); });
-    groups = [...m.entries()].map(([k, g]) => [k, g.rs, k, g.ds]); curKey = groups.length ? groups[groups.length-1][2] : null; }
-  const empty = { rs: [], ds: [] };
-  const cur = tab === "day" ? (isGraded(day) ? { rs: [API.result(day)], ds: [day] } : empty) : (groups.length ? { rs: groups[groups.length-1][1], ds: groups[groups.length-1][3] } : empty);
-  const R = rate(cur.rs), A = levelRate(cur.ds), C = 2 * Math.PI * 50, LV = esc(API.level);
-  const title = tab === "day" ? (isGraded(day) ? `${day === TODAY ? '오늘' : TV.label(day)} 정답률` : '오늘은 아직 채점 전') : tab === "week" ? '이번 주 정답률' : '이번 달 정답률';
-  const ang = (A.p / 100) * 2 * Math.PI - Math.PI / 2, tick = r => `${(64 + Math.cos(ang) * r).toFixed(1)} ${(64 + Math.sin(ang) * r).toFixed(1)}`;
-  const ring = R.q ? `<circle class="arc" cx="64" cy="64" r="50" fill="none" stroke="#0f6f90" stroke-width="13" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" style="--c:${C.toFixed(1)};stroke-dashoffset:${(C*(1-R.p/100)).toFixed(1)}" transform="rotate(-90 64 64)"/>
-      <path class="avg-tick" d="M${tick(45)} L${tick(63)}"/><text x="64" y="77" text-anchor="middle" class="big">${R.p}%</text>` : `<text x="64" y="72" text-anchor="middle" class="none">채점 전</text>`;
-  const diff = R.p - A.p;
-  const facts = R.q ? `<div class="vs"><span class="me"><em>나</em><b>${R.p}%</b></span><span class="lv"><em>${LV} 평균</em><b>${A.p}%</b></span></div>
-      <p class="cq">${R.c} / ${R.q}문제 맞힘</p><p class="diff ${diff >= 0 ? 'up' : 'down'}">${diffTxt(R.p, A.p)}</p>`
-    : '<p>시험지를 채점하면 정답률과 레벨 평균이 나와요.</p>';
-  $("stat").innerHTML = `<div class="head"><svg viewBox="0 0 128 128" role="img" aria-label="${title} ${R.q ? `나 ${R.p}퍼센트, ${LV} 평균 ${A.p}퍼센트` : '없음'}"><circle cx="64" cy="64" r="50" fill="none" stroke="#f1e8d6" stroke-width="13"/>${ring}</svg>
-      <div class="facts"><h3>${title}</h3>${facts}</div></div>
-    <div class="bars">${groups.map(([k, rs, key, ds], i) => { const x = rate(rs), a = levelRate(ds);
-      return `<div class="br${key === curKey ? ' cur' : ''}" role="group" aria-label="${k} 나 ${x.p}퍼센트(${x.c}/${x.q}), ${LV} 평균 ${a.p}퍼센트"><span class="k">${k}<small>${x.c}/${x.q}</small></span><span class="t"><span class="tr"><i style="width:${x.p}%;--i:${i}"></i></span><s style="left:${a.p}%"></s></span><span class="v"><b>${x.p}%</b><small>평균 ${a.p}%</small></span></div>`; }).join("")}</div>
-    ${tab === "day" ? '' : missBlock(tab === "week" ? "이번 주 자주 틀린 단어" : "이번 달 자주 틀린 단어", cur.ds)}`;
+  const M = recModel(), LV = esc(M.level);
+  const rows = [[M.selLabel, M.sel, "채점 전"], [M.weekLabel, M.week, "아직 없어요"], [M.monthLabel, M.month, "아직 없어요"]];
+  const body = rows.map(([k, s, none]) => s
+    ? `<tbody><tr><th scope="row">${k}<small>${s.R.q}문제 중 ${s.R.c}문제</small></th><td class="me">${s.R.p}<span class="u">%</span></td><td class="lv">${s.A.p}<span class="u">%</span></td></tr>
+        <tr class="say${s.R.p > s.A.p ? ' up' : ''}"><td colspan="3">${diffTxt(s.R.p, s.A.p)}</td></tr></tbody>`
+    : `<tbody><tr><th scope="row">${k}</th><td class="wait" colspan="2">${none}</td></tr><tr class="say"><td colspan="3"></td></tr></tbody>`).join("");
+  $("stat").innerHTML = `<table class="rc"><caption class="vh">기간별 내 정답률과 ${LV} 평균</caption><colgroup><col class="c1"><col class="c2"><col></colgroup>
+      <thead><tr><th scope="col"><span class="vh">기간</span></th><th scope="col" class="c-me">나</th><th scope="col" class="c-lv">${LV} 평균</th></tr></thead>${body}</table>
+    ${M.month ? missBlock(`${M.monthLabel} 자주 틀린 단어`, M.month.ds) : ''}`;
 }
-$("tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; tab = b.dataset.k; renderStat(); };
-$("tabs").onkeydown = e => { if (!["ArrowLeft","ArrowRight"].includes(e.key)) return; const ks = ["day","week","month"];
-  tab = ks[(ks.indexOf(tab) + (e.key === "ArrowRight" ? 1 : 2)) % 3]; renderStat(); $("tabs").querySelector(`[data-k="${tab}"]`).focus(); };
 //REC-JS-END
 
 function renderSheet(){ if (isGraded(day)) renderGraded(API.result(day), false); else renderBlank(); }
