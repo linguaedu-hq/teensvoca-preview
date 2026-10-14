@@ -55,8 +55,8 @@ window.TV = (function () {
   // 시안은 같은 꼴을 흉내 낸다: sheet() 에는 정답·맞음 여부가 없다.
   const copy = (o) => JSON.parse(JSON.stringify(o));
 
-  // 레벨 = 반 이름 앞부분(LIV1-4 → LIV1, LIV2P-1 → LIV2P, 202-11 → 202, Apex2-12 → Apex2)
-  const level = (cls) => String(cls).replace(/-\d+$/, "");
+  // 레벨 = 반 이름에서 「-」 앞부분, 대소문자 무시(대표 10-14): LIV1-1~LIV1-4 → LIV1 · LIV2P-1 → LIV2P(LIV2 와 다른 레벨) · liv1-1 → LIV1
+  const levelOf = (cls) => String(cls).trim().split("-")[0].toUpperCase();
   // 같은 레벨의 다른 반(가짜, 반마다 5명). results·classes 와 위 난수 순서는 건드리지 않는다(다른 시안·Mia 점수 유지).
   // 밖으로는 레벨별 합계(맞힌 문제 수·전체 문제 수)만 낸다. 다른 학생 이름·점수는 내보내지 않는다.
   let seed2 = 101;
@@ -65,11 +65,11 @@ window.TV = (function () {
   days.forEach((d) => {
     const t = (levelTotals[d] = {});
     const add = (lv, c, q) => { const x = (t[lv] = t[lv] || { c: 0, q: 0 }); x.c += c; x.q += q; };
-    results[d].forEach((r) => add(level(r.cls), r.correct, r.q));
+    results[d].forEach((r) => add(levelOf(r.cls), r.correct, r.q));
     classes.forEach((k) => {
       for (let sib = 0; sib < 3; sib++) for (let i = 0; i < 5; i++) {
         const c = Math.min(k.q, Math.round(k.q * (0.5 + rnd2() * 0.45)));
-        add(level(k.c), c, k.q);
+        add(levelOf(k.c), c, k.q);
       }
     });
   });
@@ -77,7 +77,7 @@ window.TV = (function () {
   function student(name, cls) {
     const find = (d) => (results[d] || []).find((x) => x.name === name && x.cls === cls);
     const history = days.filter((d) => find(d));
-    const lv = level(cls);
+    const lv = levelOf(cls);
     return {
       history,
       level: lv,
@@ -99,5 +99,5 @@ window.TV = (function () {
       },
     };
   }
-  return { days, classes, results, label, avg, today: days[days.length - 1], student, level };
+  return { days, classes, results, label, avg, today: days[days.length - 1], student, levelOf };
 })();

@@ -10,12 +10,12 @@
   --y:#fcd377;--y2:#edb033;--red:#d71718;--red-dk:#9e0f10;--g:#89b929;--b:#158ab2;--b-ink:#0f6f90;--brown:#673a1b;--ink:#221815;
   /* 종이·먹 */
   --ground:#fff8ea;--paper:#fffdf6;--rule:#d3e4f0;--margin:#f0a3a3;--pencil:#3f3732;--mute:#6e5f55;--track:#f1e8d6;
-  --row:42px;--ease-out:cubic-bezier(.16,1,.3,1);
+  --row:42px;--ease-out:cubic-bezier(.23,1,.32,1);--ease-io:cubic-bezier(.77,0,.175,1);--ease-pen:cubic-bezier(.65,0,.35,1);
   --shadow-paper:0 1px 0 #67391b14,0 12px 28px -8px #67391b2e;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;min-height:100dvh;background:var(--ground);color:var(--ink);font:16px/1.55 "Gowun Dodum",system-ui,sans-serif;caret-color:var(--red)}
+body{margin:0;min-height:100dvh;background:var(--ground);color:var(--ink);font:16px/1.55 "Gowun Dodum",system-ui,sans-serif;word-break:keep-all;overflow-wrap:anywhere;caret-color:var(--red)}
 ::selection{background:var(--y);color:var(--ink)}
 :focus-visible{outline:3px solid var(--b-ink);outline-offset:3px;border-radius:10px}
 button{font:inherit;color:inherit}
@@ -40,15 +40,15 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
   -webkit-mask:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);mask:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);padding-inline:14px}
 .flow::-webkit-scrollbar{height:6px}.flow::-webkit-scrollbar-thumb{background:var(--y2);border-radius:3px}
 .day{flex:0 0 auto;width:76px;min-height:72px;border:2px solid #ecdcbc;border-radius:14px;background:#fff;padding:7px 4px 5px;text-align:center;cursor:pointer;
-  transition:transform .2s var(--ease-out),border-color .2s}
-.day:hover{transform:translateY(-2px)}
+  transition:transform .16s var(--ease-out),border-color .16s ease}
+@media (hover:hover) and (pointer:fine){.day:hover{transform:translateY(-2px)}}.day:active{transform:scale(.97)}
 .day .d{display:block;font-size:13px;color:var(--mute);line-height:1.2}
 .day .s{display:block;font-family:Caveat;font-size:28px;color:var(--red);line-height:1.15}
 .day .s.wait{font-family:"Nanum Pen Script";font-size:22px;line-height:1.5}
 .day.today:not(.graded){border-style:dashed;border-color:var(--red)}
 .day[aria-pressed="true"]{border-color:var(--ink);border-style:solid;box-shadow:0 3px 0 var(--ink)}
-.day.stamp .s{animation:stamp .5s var(--ease-out) both}
-@keyframes stamp{0%{opacity:0;transform:scale(1.8) rotate(-10deg)}100%{opacity:1;transform:none}}
+.day.stamp .s{animation:stamp .28s var(--ease-out) both}
+@keyframes stamp{0%{opacity:0;transform:scale(1.3) rotate(-6deg)}100%{opacity:1;transform:none}}
 
 /* 시험지 + 기록 */
 .grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px;margin-top:6px;align-items:start}
@@ -81,51 +81,55 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 .done .fix,.done .total .v,.done .praise{clip-path:inset(0 0 0 0)}
 .done .strike{transform:scaleX(1) rotate(-2deg)}
 /* 채점 중 : 빨간 펜이 위에서 아래로 */
-.run .mark path{animation:draw .3s cubic-bezier(.3,.7,.4,1) var(--t) forwards}
-.run .strike{animation:strike .2s ease-out calc(var(--t) + .1s) forwards}
-.run .fix{animation:write .36s cubic-bezier(.4,.1,.5,1) calc(var(--t) + .24s) forwards}
-.run .total svg path{animation:draw .7s cubic-bezier(.3,.7,.4,1) var(--t) forwards}
-.run .total .v{animation:write .45s ease-out calc(var(--t) + .5s) forwards}
-.run .praise{animation:write .55s ease-out calc(var(--t) + 1s) forwards}
+.run .mark path{animation:draw .28s var(--ease-pen) var(--t) forwards}
+.run li.x .mark path{animation-duration:.16s}
+.run .strike{animation:strike .16s var(--ease-out) calc(var(--t) + .12s) forwards}
+.run .fix{animation:write .34s var(--ease-pen) calc(var(--t) + .26s) forwards}
+.run .total svg path{animation:draw .55s var(--ease-pen) var(--t) forwards}
+.run .total .v{animation:write .32s var(--ease-out) calc(var(--t) + .45s) forwards}
+.run .praise{animation:write .4s var(--ease-out) calc(var(--t) + .85s) forwards}
 @keyframes draw{0%{opacity:1;stroke-dashoffset:1}100%{opacity:1;stroke-dashoffset:0}}
 @keyframes strike{to{transform:scaleX(1) rotate(-2deg)}}
 @keyframes write{to{clip-path:inset(0 0 0 0)}}
 .redpen{position:absolute;left:0;top:0;width:84px;height:84px;pointer-events:none;opacity:0;z-index:4;filter:drop-shadow(2px 6px 4px #67391b40)}
-.fade-in{animation:fade .35s ease-out both}@keyframes fade{from{opacity:0}}
+.fade-in{animation:fade .2s var(--ease-out) both}@keyframes fade{from{opacity:0}}
 
 /* 채점하기 : 누가 봐도 눌러야 하는 것 */
-.cta{position:absolute;inset:112px 0 0;z-index:3;background:linear-gradient(#fffdf6d9,#fffdf6b3 40%,#fffdf6d9);transition:opacity .3s ease-out}
+.cta{position:absolute;inset:112px 0 0;z-index:3;background:linear-gradient(#fffdf6d9,#fffdf6b3 40%,#fffdf6d9);transition:opacity .2s var(--ease-out)}
 .cta.leave{opacity:0;pointer-events:none}
+.cta.leave .gwrap{animation:none;transform:scale(.96);transition:transform .2s var(--ease-out)}
 .cta-in{position:sticky;top:max(16vh,110px);display:flex;flex-direction:column;align-items:center;padding:56px 16px 24px}
-.gwrap{position:relative;animation:bob 1.8s ease-in-out infinite}
-.gwrap .ring{position:absolute;inset:-4px;border-radius:999px;border:3px solid var(--red);opacity:0;animation:ring 1.8s ease-out infinite;pointer-events:none}
-.gwrap .ring+.ring{animation-delay:.9s}
+.gwrap{position:relative;animation:hop 2.4s var(--ease-pen) infinite}
+.gwrap .ring{position:absolute;inset:-4px;border-radius:999px;border:3px solid var(--red);opacity:0;animation:ring 2.4s var(--ease-out) infinite;pointer-events:none}
+.gwrap .ring+.ring{animation-delay:.14s}
 .gbtn{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:68px;font-family:Jua;font-size:30px;color:#fff;background:var(--red);border:0;border-radius:999px;
-  padding:12px 38px 12px 26px;cursor:pointer;overflow:hidden;box-shadow:0 6px 0 var(--red-dk),0 16px 28px -6px #d7171866;transition:transform .15s var(--ease-out),box-shadow .15s}
-.gbtn:hover{transform:translateY(-2px) scale(1.04)}
-.gbtn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--red-dk),0 6px 12px -4px #d7171855}
+  padding:12px 38px 12px 26px;cursor:pointer;overflow:hidden;box-shadow:0 6px 0 var(--red-dk),0 16px 28px -6px #d7171866;transition:transform .12s var(--ease-out),box-shadow .12s var(--ease-out)}
+@media (hover:hover) and (pointer:fine){.gbtn:hover{transform:translateY(-2px) scale(1.03)}}
+.gbtn:active{transform:translateY(4px) scale(.97);box-shadow:0 2px 0 var(--red-dk),0 6px 12px -4px #d7171855}
 .gbtn:focus-visible{outline:4px solid var(--b-ink);outline-offset:6px;border-radius:999px}
 .gbtn[disabled]{cursor:progress}
-.gbtn .shine{position:absolute;top:-10px;bottom:-10px;width:44px;left:-70px;background:linear-gradient(90deg,transparent,#ffffff8c,transparent);transform:skewX(-20deg);animation:shine 2.6s ease-in-out infinite}
-.gbtn .pen{width:38px;height:38px;flex:0 0 auto;animation:wiggle .9s ease-in-out infinite;transform-origin:20% 80%}
-.gbtn.loading .pen{animation-duration:.35s}
+.gbtn .shine{position:absolute;top:-10px;bottom:-10px;width:44px;left:0;background:linear-gradient(90deg,transparent,#ffffff8c,transparent);transform:translateX(-80px) skewX(-20deg);animation:shine 2.4s var(--ease-io) infinite}
+.gbtn .pen{width:38px;height:38px;flex:0 0 auto;animation:wiggle 2.4s var(--ease-pen) infinite;transform-origin:20% 80%}
+.gbtn.loading .pen{animation:busy .32s linear infinite}
+.cta.busy .gwrap,.cta.busy .ring,.cta.busy .shine{animation:none}
 .hint{position:relative;margin-top:16px;font-family:"Nanum Pen Script";font-size:30px;line-height:1.1;color:var(--red);text-align:center}
 .hint svg{position:absolute;left:-46px;top:-30px;width:44px;height:44px;overflow:visible}
 .hint svg path{fill:none;stroke:var(--red);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .err{margin-top:10px;color:var(--red-dk);font-size:15px;min-height:1.5em;text-align:center}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-@keyframes ring{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.28)}}
-@keyframes shine{0%{left:-70px}55%,100%{left:115%}}
-@keyframes wiggle{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(12deg)}}
+@keyframes hop{0%,40%,100%{transform:translateY(0)}14%{transform:translateY(-9px)}26%{transform:translateY(0)}33%{transform:translateY(-3px)}}
+@keyframes ring{0%,25%{opacity:0;transform:scale(1)}27%{opacity:.55;transform:scale(1)}70%,100%{opacity:0;transform:scale(1.3)}}
+@keyframes shine{0%,30%{transform:translateX(-80px) skewX(-20deg)}62%,100%{transform:translateX(320px) skewX(-20deg)}}
+@keyframes wiggle{0%,40%,100%{transform:rotate(0)}8%{transform:rotate(-12deg)}17%{transform:rotate(12deg)}26%{transform:rotate(-8deg)}33%{transform:rotate(4deg)}}
+@keyframes busy{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(10deg)}}
 
 /* 기록 */
 .panel{background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 0 #ecdcbc,0 10px 24px -10px #67391b2e}
 .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--track);border-radius:14px;margin-bottom:16px}
-.tabs button{min-height:44px;font-family:Jua;font-size:17px;border:0;border-radius:11px;background:transparent;color:var(--brown);cursor:pointer;transition:background .2s,color .2s}
+.tabs button{min-height:44px;font-family:Jua;font-size:17px;border:0;border-radius:11px;background:transparent;color:var(--brown);cursor:pointer;transition:background-color .15s ease,color .15s ease}
 .tabs button[aria-selected="true"]{background:var(--b-ink);color:#fff;box-shadow:0 2px 0 #0a4f67}
 .head{display:grid;grid-template-columns:128px 1fr;align-items:center;gap:16px}
 .head svg{width:128px;height:128px;display:block}
-.head .arc{transition:none;animation:arc .9s var(--ease-out) both}
+.head .arc{animation:arc .6s var(--ease-out) both}
 @keyframes arc{from{stroke-dashoffset:var(--c)}}
 .head .avg-tick{stroke:var(--ink);stroke-width:3.5;stroke-linecap:round}
 .head .big{font-family:Caveat;font-size:40px;fill:var(--red)}
@@ -151,7 +155,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 .br .k small{display:block;font-size:13px}
 .br .t{position:relative;height:22px;display:flex;align-items:center}
 .br .tr{display:block;width:100%;height:12px;border-radius:6px;background:var(--track);overflow:hidden}
-.br .tr i{display:block;height:100%;border-radius:6px;background:var(--y2);transform-origin:left;animation:grow .7s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms)}
+.br .tr i{display:block;height:100%;border-radius:6px;background:var(--y2);transform-origin:left;animation:grow .45s var(--ease-out) both;animation-delay:calc(var(--i) * 30ms)}
 .br .t s{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 1.5px #fff}
 .br .v{text-align:right;line-height:1.05}
 .br .v b{display:block;font-family:Caveat;font-size:24px;color:var(--red);font-weight:700}
@@ -182,7 +186,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
   .panel{padding:16px 14px}
 }
 @media (prefers-reduced-motion:reduce){
-  .gwrap,.gwrap .ring,.gbtn .shine,.gbtn .pen,.head .arc,.br .tr i,.day.stamp .s{animation:none}
+  .gwrap,.gwrap .ring,.gbtn .shine,.gbtn .pen,.gbtn.loading .pen,.head .arc,.br .tr i,.day.stamp .s{animation:none}
   .gwrap .ring:first-child{opacity:.45}
   .gbtn,.day,.cta{transition:none}
 }
@@ -207,7 +211,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 </main>
 <p class="note">시안용 가짜 데이터(학생 한 명 Mia) <button type="button" id="reset">채점 기록 지우고 다시 보기</button></p>
 </div>
-<script src="data.js?v=5"></script>
+<script src="data.js?v=6"></script>
 <script>
 // 로그인한 학생 한 명 : 실제로는 서버가 이 학생 것만 내려준다(다른 학생 결과는 페이지에 없음)
 const ME = { name: "Mia", cls: "LIV1-4" };
@@ -247,13 +251,14 @@ function renderTop(){
   if (day === TODAY && !isGraded(day)) sub.innerHTML = "오늘 시험지가 도착했어요. <b>채점하기</b>를 눌러 보세요.";
   else { const r = API.result(day); sub.innerHTML = `${day === TODAY ? "오늘" : TV.label(day)} <b>${r.q}문제 중 ${r.correct}문제</b> 맞혔어요.`; }
 }
-function renderFlow(stampDay){
+function renderFlow(stampDay, smooth){
   const flow = $("flow");
   flow.innerHTML = API.history.map(d => { const g = isGraded(d), r = g ? API.result(d) : null, isT = d === TODAY;
     return `<button type="button" class="day${isT?' today':''}${g?' graded':''}${d===stampDay?' stamp':''}" data-d="${d}" aria-pressed="${d===day}" aria-label="${TV.label(d)} ${g ? r.score+'점' : '채점 전'}">
       <span class="d">${isT ? '오늘' : TV.label(d)}</span>${g ? `<span class="s">${r.score}</span>` : '<span class="s wait">채점 전</span>'}</button>`; }).join("");
   const on = flow.querySelector('[aria-pressed="true"]');
-  if (on) flow.scrollLeft = Math.max(0, on.offsetLeft - (flow.clientWidth - on.offsetWidth) / 2);   // .flow 가 기준(position:relative)
+  if (on) { const left = Math.max(0, on.offsetLeft - (flow.clientWidth - on.offsetWidth) / 2);   // .flow 가 기준(position:relative)
+    if (smooth && !reduced()) flow.scrollTo({ left, behavior: "smooth" }); else flow.scrollLeft = left; }   // 누른 칸으로는 부드럽게, 처음 열 때는 바로
 }
 function sheetHead(s){
   return `<div class="sheet-h"><h2 id="sheet-title">${TV.label(s.d)} 시험지</h2><div class="meta">${esc(s.subject)} ${s.q}문제<br>${esc(s.cls)} 담임 ${esc(s.teacher)}</div>`;
@@ -275,14 +280,14 @@ function renderGraded(r, animate){
   const items = r.items.map(it => { const at = t; times.push({ no: it.no, at, ok: it.ok }); t += step + (it.ok ? 0 : .6);
     const mark = it.ok ? handCircle(it.no*7+3, 46, 38) : handSlash(it.no*5+1);
     const word = it.wrote ? `<span class="w">${esc(it.wrote)}${it.ok ? '' : '<span class="strike"></span>'}</span>` : '<span class="w blank"></span>';
-    return `<li style="--t:${at.toFixed(2)}s" data-no="${it.no}"><span class="n">${it.no}<svg class="mark" viewBox="0 0 46 38" aria-hidden="true"><path pathLength="1" d="${mark}"/></svg></span>
+    return `<li${it.ok ? "" : ' class="x"'} style="--t:${at.toFixed(2)}s" data-no="${it.no}"><span class="n">${it.no}<svg class="mark" viewBox="0 0 46 38" aria-hidden="true"><path pathLength="1" d="${mark}"/></svg></span>
       <span class="ans">${word}${it.ok ? '' : `<span class="fix">${esc(it.ans)}</span>`}</span><span class="vh">${it.ok ? '맞음' : '틀림, 정답 ' + esc(it.ans)}</span></li>`; }).join("");
   const tt = t + .15;
   const praise = r.score === 100 ? '참 잘했어요!' : r.score >= 90 ? '훌륭해요!' : '';
   el.className = "sheet " + (animate ? "run" : "done");
   el.innerHTML = sheetHead(r) + `<div class="total" style="--t:${tt.toFixed(2)}s" aria-label="${r.q}문제 중 ${r.correct}문제 맞음"><svg viewBox="0 0 116 92" aria-hidden="true"><path pathLength="1" d="${handCircle(r.q*13+r.correct, 116, 92, 1.08)}"/></svg><span class="v">${r.correct}<small>/${r.q}</small></span></div>
     ${praise ? `<div class="praise" style="--t:${tt.toFixed(2)}s">${praise}</div>` : ''}</div><ol class="items">${items}</ol>`;
-  return { times, end: tt + (praise ? 1.6 : 1.0) };
+  return { times, end: tt + (praise ? 1.35 : 0.9) };
 }
 // 빨간 펜이 문항을 차례로 찾아가며 매긴다(Web Animations)
 function runPen(times, end){
@@ -299,23 +304,23 @@ function runPen(times, end){
   const tt = parseFloat(el.querySelector(".total").style.getPropertyValue("--t"));
   frames.push({ t: tt, x: tx - 30, y: ty - 30, o: 1 }, { t: tt + .7, x: tx + 20, y: ty + 10, o: 1 }, { t: end - .2, x: tx + 70, y: ty - 40, o: 0 });
   const T = end; frames.sort((a, b) => a.t - b.t);   // 시간순(겹치는 구간이 있어도 Web Animations 오프셋은 늘 오름차순)
-  pen.animate(frames.map(f => ({ transform: pos(f.x, f.y), opacity: f.o, offset: Math.min(1, f.t / T) })),
+  pen.animate(frames.map(f => ({ transform: pos(f.x, f.y), opacity: f.o, offset: Math.min(1, f.t / T), easing: "cubic-bezier(.65,0,.35,1)" })),   // 구간마다 가속·감속(등속 미끄럼 X)
     { duration: T * 1000, easing: "linear", fill: "forwards" }).finished.then(() => pen.remove()).catch(() => pen.remove());
 }
 async function grade(){
   if (busy) return; busy = true;
   const btn = $("gbtn"), err = $("err");
-  btn.disabled = true; btn.classList.add("loading"); btn.querySelector(".lbl").textContent = "불러오는 중"; err.textContent = "";
+  btn.disabled = true; btn.classList.add("loading"); $("cta").classList.add("busy"); btn.querySelector(".lbl").textContent = "불러오는 중"; err.textContent = "";
   let r;
   try { r = await API.fetchGrade(day); }
-  catch (e) { busy = false; btn.disabled = false; btn.classList.remove("loading"); btn.querySelector(".lbl").textContent = "채점하기";
+  catch (e) { busy = false; btn.disabled = false; btn.classList.remove("loading"); $("cta").classList.remove("busy"); btn.querySelector(".lbl").textContent = "채점하기";
     err.textContent = "채점을 불러오지 못했어요. 다시 눌러 주세요."; return; }
   store.set(KEY(day), "1");               // 한 번 채점되면 고정
   const cta = $("cta"); cta.classList.add("leave");
   const settle = () => { busy = false; renderTop(); renderFlow(day); renderStat(); };
   if (reduced()) { renderGraded(r, false); $("sheet").classList.add("fade-in"); settle(); return; }
   setTimeout(() => { const { times, end } = renderGraded(r, true); try { runPen(times, end); } catch (e) { document.querySelectorAll(".redpen").forEach(n => n.remove()); }
-    setTimeout(settle, end * 1000); }, 280);
+    setTimeout(settle, end * 1000); }, 200);
 }
 function weekOf(d){ const dt = new Date(2026, +d.slice(0,2)-1, +d.slice(2)); const mon = new Date(dt); mon.setDate(dt.getDate() - ((dt.getDay()+6)%7)); return `${mon.getMonth()+1}/${mon.getDate()} 주`; }
 // 레벨 평균: 같은 레벨 전체의 맞힌 문제 / 전체 문제(숫자 하나). 다른 학생 이름·점수는 쓰지 않는다.
@@ -353,9 +358,9 @@ function renderStat(){
     <div class="review"><h3>${tab === "day" ? '다시 외울 단어' : '자주 틀린 단어'}</h3>${review}</div>`;
 }
 function renderSheet(){ if (isGraded(day)) renderGraded(API.result(day), false); else renderBlank(); }
-function renderAll(){ renderTop(); renderFlow(); renderSheet(); renderStat(); }
+function renderAll(smooth){ renderTop(); renderFlow(undefined, smooth); renderSheet(); renderStat(); }
 
-$("flow").onclick = e => { const b = e.target.closest(".day"); if (!b || busy) return; day = b.dataset.d; renderAll(); };
+$("flow").onclick = e => { const b = e.target.closest(".day"); if (!b || busy) return; day = b.dataset.d; renderAll(true); };
 $("tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; tab = b.dataset.k; renderStat(); };
 $("tabs").onkeydown = e => { if (!["ArrowLeft","ArrowRight"].includes(e.key)) return; const ks = ["day","week","month"];
   tab = ks[(ks.indexOf(tab) + (e.key === "ArrowRight" ? 1 : 2)) % 3]; renderStat(); $("tabs").querySelector(`[data-k="${tab}"]`).focus(); };
