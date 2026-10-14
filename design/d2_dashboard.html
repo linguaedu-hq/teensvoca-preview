@@ -24,8 +24,8 @@ button{font:inherit;color:inherit}
 
 /* 머리 */
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px}
-.brand{font-family:Jua;font-size:20px;line-height:1.1;white-space:nowrap}.brand b{color:var(--y2);font-weight:400}
-.brand small{display:block;font-family:"Gowun Dodum";font-size:13px;color:var(--mute);margin-top:2px}
+.brand{display:flex;flex-direction:column;gap:2px}.brand img{display:block;width:150px;height:auto}
+.brand small{display:block;font-size:13px;color:var(--mute);padding-left:2px}
 .me{display:flex;align-items:center;gap:4px}
 .me .nm{font-family:Jua;font-size:16px;padding:0 6px}
 .out{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border:0;border-radius:12px;background:transparent;color:var(--mute);font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
@@ -36,10 +36,10 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 .sub b{color:var(--ink);font-weight:400;font-family:Jua}
 
 /* 날짜 흐름 : 매일 한 칸 */
-.flow{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 12px;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:var(--y2) transparent;
+.flow{position:relative;display:flex;gap:8px;overflow-x:auto;padding:6px 2px 12px;scrollbar-width:thin;scrollbar-color:var(--y2) transparent;
   -webkit-mask:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);mask:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);padding-inline:14px}
 .flow::-webkit-scrollbar{height:6px}.flow::-webkit-scrollbar-thumb{background:var(--y2);border-radius:3px}
-.day{flex:0 0 auto;width:76px;min-height:72px;border:2px solid #ecdcbc;border-radius:14px;background:#fff;padding:7px 4px 5px;text-align:center;cursor:pointer;scroll-snap-align:center;
+.day{flex:0 0 auto;width:76px;min-height:72px;border:2px solid #ecdcbc;border-radius:14px;background:#fff;padding:7px 4px 5px;text-align:center;cursor:pointer;
   transition:transform .2s var(--ease-out),border-color .2s}
 .day:hover{transform:translateY(-2px)}
 .day .d{display:block;font-size:13px;color:var(--mute);line-height:1.2}
@@ -127,22 +127,37 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 .head svg{width:128px;height:128px;display:block}
 .head .arc{transition:none;animation:arc .9s var(--ease-out) both}
 @keyframes arc{from{stroke-dashoffset:var(--c)}}
+.head .avg-tick{stroke:var(--ink);stroke-width:3.5;stroke-linecap:round}
 .head .big{font-family:Caveat;font-size:40px;fill:var(--red)}
 .head .none{font-family:"Nanum Pen Script";font-size:26px;fill:var(--mute)}
-.facts h3{font-family:Jua;font-weight:400;font-size:18px;margin:0 0 4px}
+.facts h3{font-family:Jua;font-weight:400;font-size:18px;margin:0 0 6px}
 .facts p{margin:0;color:var(--mute);font-size:15px}
-.facts .cq{font-family:Jua;font-size:24px;color:var(--ink);line-height:1.3}
-.facts .cq span{font-size:16px;color:var(--mute)}
-.bars{margin-top:16px;display:grid;gap:4px}
-.br{display:grid;grid-template-columns:78px 1fr 64px;align-items:center;gap:10px;min-height:38px;font-size:15px}
-.br .k{color:var(--mute);white-space:nowrap}
-.br .t{height:12px;border-radius:6px;background:var(--track);overflow:hidden}
-.br .t i{display:block;height:100%;border-radius:6px;background:var(--y2);transform-origin:left;animation:grow .7s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms)}
-.br .v{text-align:right;line-height:1}
+.vs{display:flex;gap:18px;align-items:flex-end}
+.vs span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}
+.vs em{font-style:normal;font-size:14px;color:var(--mute);white-space:nowrap}
+.vs b{font-family:Caveat;font-weight:700;font-size:34px}
+.vs .me b{color:var(--red)}.vs .lv b{color:var(--ink)}
+.vs .lv em::before{content:"";display:inline-block;width:3px;height:12px;border-radius:2px;background:var(--ink);margin-right:5px;vertical-align:-1px}
+.facts .cq{margin-top:6px;color:var(--ink)}
+.facts .diff{font-size:14px}
+.facts .diff.up{color:#4d7a12}
+.key{display:flex;gap:16px;margin:16px 0 2px;font-size:13px;color:var(--mute)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key .sw-me{width:18px;height:8px;border-radius:4px;background:var(--y2)}
+.key .sw-lv{width:3px;height:14px;border-radius:2px;background:var(--ink)}
+.bars{margin-top:6px;display:grid;gap:2px}
+.br{display:grid;grid-template-columns:72px 1fr 76px;align-items:center;gap:10px;min-height:46px;font-size:15px}
+.br .k{color:var(--mute);white-space:nowrap;line-height:1.2}
+.br .k small{display:block;font-size:13px}
+.br .t{position:relative;height:22px;display:flex;align-items:center}
+.br .tr{display:block;width:100%;height:12px;border-radius:6px;background:var(--track);overflow:hidden}
+.br .tr i{display:block;height:100%;border-radius:6px;background:var(--y2);transform-origin:left;animation:grow .7s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms)}
+.br .t s{position:absolute;top:0;bottom:0;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--ink);box-shadow:0 0 0 1.5px #fff}
+.br .v{text-align:right;line-height:1.05}
 .br .v b{display:block;font-family:Caveat;font-size:24px;color:var(--red);font-weight:700}
-.br .v small{font-size:12px;color:var(--mute)}
+.br .v small{font-size:13px;color:var(--mute);white-space:nowrap}
 .br.cur .k{color:var(--ink);font-family:Jua}
-.br.cur .t i{background:var(--red)}
+.br.cur .tr i{background:var(--red)}
 @keyframes grow{from{transform:scaleX(0)}}
 .empty{margin:12px 0 0;color:var(--mute);font-size:15px}
 .review{margin-top:18px;padding-top:14px;border-top:1px dashed #e4d3b2}
@@ -155,7 +170,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 .note{margin-top:28px;font-size:13px;color:var(--mute);text-align:center}
 .note button{border:0;background:none;color:var(--mute);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px;padding:0 8px}
 
-@media (min-width:900px){.panel{position:sticky;top:16px}}
+@media (min-width:900px){.panel{position:sticky;top:16px}.brand img{width:176px}}
 @media (max-width:899px){.grid{grid-template-columns:1fr}}
 @media (max-width:420px){
   .sheet-h{padding:16px 112px 10px 66px;min-height:104px}
@@ -167,18 +182,15 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
   .panel{padding:16px 14px}
 }
 @media (prefers-reduced-motion:reduce){
-  .gwrap,.gwrap .ring,.gbtn .shine,.gbtn .pen,.head .arc,.br .t i,.day.stamp .s{animation:none}
+  .gwrap,.gwrap .ring,.gbtn .shine,.gbtn .pen,.head .arc,.br .tr i,.day.stamp .s{animation:none}
   .gwrap .ring:first-child{opacity:.45}
   .gbtn,.day,.cta{transition:none}
 }
-
-/* 링구아 틴즈 공식 로고(대표 10-14) */
-.teens-logo{display:block;height:34px;width:auto}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="1" seed="4"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter></svg>
 <div class="wrap">
 <header class="top">
-  <div class="brand"><img class="teens-logo" src="assets/lingua_teens_logo.svg" alt="Lingua Teens" width="128" height="36"><small>단어시험 채점</small></div>
+  <div class="brand"><img src="assets/lingua_teens_logo.svg" alt="Lingua Teens" width="150" height="42"><small>단어시험 채점</small></div>
   <div class="me"><span class="nm" id="who"></span><button class="out" id="logout" type="button">로그아웃</button></div>
 </header>
 <main>
@@ -195,7 +207,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 </main>
 <p class="note">시안용 가짜 데이터(학생 한 명 Mia) <button type="button" id="reset">채점 기록 지우고 다시 보기</button></p>
 </div>
-<script src="data.js?v=4"></script>
+<script src="data.js?v=5"></script>
 <script>
 // 로그인한 학생 한 명 : 실제로는 서버가 이 학생 것만 내려준다(다른 학생 결과는 페이지에 없음)
 const ME = { name: "Mia", cls: "LIV1-4" };
@@ -241,7 +253,7 @@ function renderFlow(stampDay){
     return `<button type="button" class="day${isT?' today':''}${g?' graded':''}${d===stampDay?' stamp':''}" data-d="${d}" aria-pressed="${d===day}" aria-label="${TV.label(d)} ${g ? r.score+'점' : '채점 전'}">
       <span class="d">${isT ? '오늘' : TV.label(d)}</span>${g ? `<span class="s">${r.score}</span>` : '<span class="s wait">채점 전</span>'}</button>`; }).join("");
   const on = flow.querySelector('[aria-pressed="true"]');
-  if (on) flow.scrollLeft = on.offsetLeft - flow.clientWidth/2 + on.offsetWidth/2;
+  if (on) flow.scrollLeft = Math.max(0, on.offsetLeft - (flow.clientWidth - on.offsetWidth) / 2);   // .flow 가 기준(position:relative)
 }
 function sheetHead(s){
   return `<div class="sheet-h"><h2 id="sheet-title">${TV.label(s.d)} 시험지</h2><div class="meta">${esc(s.subject)} ${s.q}문제<br>${esc(s.cls)} 담임 ${esc(s.teacher)}</div>`;
@@ -306,18 +318,23 @@ async function grade(){
     setTimeout(settle, end * 1000); }, 280);
 }
 function weekOf(d){ const dt = new Date(2026, +d.slice(0,2)-1, +d.slice(2)); const mon = new Date(dt); mon.setDate(dt.getDate() - ((dt.getDay()+6)%7)); return `${mon.getMonth()+1}/${mon.getDate()} 주`; }
+// 레벨 평균: 같은 레벨 전체의 맞힌 문제 / 전체 문제(숫자 하나). 다른 학생 이름·점수는 쓰지 않는다.
+const levelRate = ds => { const t = ds.reduce((a, d) => { const x = API.levelTotal(d); return { c: a.c + x.c, q: a.q + x.q }; }, { c: 0, q: 0 }); return { ...t, p: t.q ? Math.round(t.c*100/t.q) : 0 }; };
 function renderStat(){
   $("tabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.k === tab)));
   const done = API.history.filter(isGraded).map(d => ({ d, r: API.result(d) }));
   let groups, curKey;
-  if (tab === "day") { groups = done.slice(-7).map(x => [TV.label(x.d), [x.r], x.d]); curKey = day; }
-  else { const m = new Map(); done.forEach(x => { const k = tab === "week" ? weekOf(x.d) : `${+x.d.slice(0,2)}월`; if (!m.has(k)) m.set(k, []); m.get(k).push(x.r); });
-    groups = [...m.entries()].map(([k, rs]) => [k, rs, k]); curKey = groups.length ? groups[groups.length-1][2] : null; }
-  const head = tab === "day" ? (isGraded(day) ? [API.result(day)] : []) : (groups.length ? groups[groups.length-1][1] : []);
-  const R = rate(head), C = 2 * Math.PI * 50;
+  if (tab === "day") { groups = done.slice(-7).map(x => [TV.label(x.d), [x.r], x.d, [x.d]]); curKey = day; }
+  else { const m = new Map(); done.forEach(x => { const k = tab === "week" ? weekOf(x.d) : `${+x.d.slice(0,2)}월`; if (!m.has(k)) m.set(k, { rs: [], ds: [] }); m.get(k).rs.push(x.r); m.get(k).ds.push(x.d); });
+    groups = [...m.entries()].map(([k, g]) => [k, g.rs, k, g.ds]); curKey = groups.length ? groups[groups.length-1][2] : null; }
+  const empty = { rs: [], ds: [] };
+  const cur = tab === "day" ? (isGraded(day) ? { rs: [API.result(day)], ds: [day] } : empty) : (groups.length ? { rs: groups[groups.length-1][1], ds: groups[groups.length-1][3] } : empty);
+  const head = cur.rs, R = rate(head), A = levelRate(cur.ds), C = 2 * Math.PI * 50, LV = esc(API.level);
   const title = tab === "day" ? (isGraded(day) ? `${day === TODAY ? '오늘' : TV.label(day)} 정답률` : '오늘은 아직 채점 전') : tab === "week" ? '이번 주 정답률' : '이번 달 정답률';
+  const ang = (A.p / 100) * 2 * Math.PI - Math.PI / 2, tick = r => `${(64 + Math.cos(ang) * r).toFixed(1)} ${(64 + Math.sin(ang) * r).toFixed(1)}`;
   const ring = R.q ? `<circle class="arc" cx="64" cy="64" r="50" fill="none" stroke="#d71718" stroke-width="13" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" style="--c:${C.toFixed(1)};stroke-dashoffset:${(C*(1-R.p/100)).toFixed(1)}" transform="rotate(-90 64 64)"/>
-      <text x="64" y="77" text-anchor="middle" class="big">${R.p}%</text>` : `<text x="64" y="72" text-anchor="middle" class="none">채점 전</text>`;
+      <path class="avg-tick" d="M${tick(45)} L${tick(63)}"/><text x="64" y="77" text-anchor="middle" class="big">${R.p}%</text>` : `<text x="64" y="72" text-anchor="middle" class="none">채점 전</text>`;
+  const diff = R.p - A.p, diffTxt = diff > 0 ? `평균보다 ${diff}%p 높아요` : diff < 0 ? `평균보다 ${-diff}%p 낮아요` : '평균과 같아요';
   const miss = {}; (tab === "day" ? head : done.map(x => x.r)).forEach(r => r.wrongs.forEach(w => miss[w.ans] = (miss[w.ans]||0) + 1));
   const words = Object.entries(miss).sort((a,b) => b[1]-a[1]).slice(0, 10);
   const uline = `<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6 C25 2 55 9 98 4" fill="none" stroke="#89b929" stroke-width="3" stroke-linecap="round"/></svg>`;
@@ -325,10 +342,14 @@ function renderStat(){
   if (!head.length && tab === "day") review = `<p class="empty">채점하면 다시 외울 단어가 여기에 나와요.</p>`;
   else if (!words.length) review = `<span class="clear">틀린 단어가 없어요${uline}</span>`;
   else review = `<ul>${words.map(([w,n]) => `<li>${esc(w)}${n > 1 ? `<small>${n}번</small>` : ''}</li>`).join("")}</ul>`;
-  $("stat").innerHTML = `<div class="head"><svg viewBox="0 0 128 128" role="img" aria-label="${title} ${R.q ? R.p + '퍼센트' : '없음'}"><circle cx="64" cy="64" r="50" fill="none" stroke="#f1e8d6" stroke-width="13"/>${ring}</svg>
-      <div class="facts"><h3>${title}</h3>${R.q ? `<div class="cq">${R.c}<span> / ${R.q}문제</span></div><p>맞힌 문제 / 전체 문제</p><p>시험 ${head.length}번</p>` : '<p>시험지를 채점하면 정답률이 나와요.</p>'}</div></div>
-    <div class="bars">${groups.length ? groups.map(([k, rs, key], i) => { const x = rate(rs);
-      return `<div class="br${key === curKey ? ' cur' : ''}"><span class="k">${k}</span><span class="t"><i style="width:${x.p}%;--i:${i}"></i></span><span class="v"><b>${x.p}%</b><small>${x.c}/${x.q}</small></span></div>`; }).join("") : ''}</div>
+  const facts = R.q ? `<div class="vs"><span class="me"><em>나</em><b>${R.p}%</b></span><span class="lv"><em>${LV} 평균</em><b>${A.p}%</b></span></div>
+      <p class="cq">${R.c} / ${R.q}문제 맞힘</p><p class="diff ${diff >= 0 ? 'up' : 'down'}">${diffTxt}</p>`
+    : '<p>시험지를 채점하면 정답률과 레벨 평균이 나와요.</p>';
+  $("stat").innerHTML = `<div class="head"><svg viewBox="0 0 128 128" role="img" aria-label="${title} ${R.q ? `나 ${R.p}퍼센트, ${LV} 평균 ${A.p}퍼센트` : '없음'}"><circle cx="64" cy="64" r="50" fill="none" stroke="#f1e8d6" stroke-width="13"/>${ring}</svg>
+      <div class="facts"><h3>${title}</h3>${facts}</div></div>
+    ${groups.length ? `<div class="key" aria-hidden="true"><span><i class="sw-me"></i>나</span><span><i class="sw-lv"></i>${LV} 평균</span></div>` : ''}
+    <div class="bars">${groups.map(([k, rs, key, ds], i) => { const x = rate(rs), a = levelRate(ds);
+      return `<div class="br${key === curKey ? ' cur' : ''}" role="group" aria-label="${k} 나 ${x.p}퍼센트(${x.c}/${x.q}), ${LV} 평균 ${a.p}퍼센트"><span class="k">${k}<small>${x.c}/${x.q}</small></span><span class="t"><span class="tr"><i style="width:${x.p}%;--i:${i}"></i></span><s style="left:${a.p}%"></s></span><span class="v"><b>${x.p}%</b><small>평균 ${a.p}%</small></span></div>`; }).join("")}</div>
     <div class="review"><h3>${tab === "day" ? '다시 외울 단어' : '자주 틀린 단어'}</h3>${review}</div>`;
 }
 function renderSheet(){ if (isGraded(day)) renderGraded(API.result(day), false); else renderBlank(); }
