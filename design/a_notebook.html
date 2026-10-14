@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A · 공책 — Teens Voca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&family=Nanum+Pen+Script&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fffdf6;--line:#cfe3f2;--margin:#f2a7a7;--ink:#221815;--red:#e0281e;--yellow:#fcd377;--green:#89b929;--blue:#158ab2}
+*{box-sizing:border-box}body{margin:0;background:#f4efe3;color:var(--ink);font-family:"Gowun Dodum",sans-serif}
+header{display:flex;align-items:center;gap:14px;padding:18px 24px;background:var(--yellow);border-bottom:3px dashed #edb033}
+header h1{font-family:Jua;font-size:28px;margin:0}header .sub{font-family:Gaegu;font-size:20px;color:#673a1b}
+.days{display:flex;gap:8px;overflow-x:auto;padding:14px 24px}
+.days button{font-family:Jua;font-size:15px;border:2px solid var(--ink);background:#fff;border-radius:10px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.days button.on{background:var(--ink);color:#fff}
+.classes{display:flex;gap:8px;flex-wrap:wrap;padding:0 24px 8px}
+.classes button{font-family:Gaegu;font-weight:700;font-size:18px;border:0;background:#fff;border-radius:999px;padding:4px 14px;cursor:pointer;box-shadow:0 2px 0 #0002}
+.classes button.on{background:var(--blue);color:#fff}
+main{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;padding:16px 24px 48px}
+.sheet{position:relative;background:var(--paper);border-radius:4px;padding:18px 18px 18px 52px;box-shadow:0 6px 14px #0001,0 1px 0 #0002;
+  background-image:linear-gradient(90deg,transparent 40px,var(--margin) 40px,var(--margin) 42px,transparent 42px),repeating-linear-gradient(transparent 0 27px,var(--line) 27px 28px);transform:rotate(var(--r,0deg))}
+.sheet .who{font-family:Jua;font-size:20px}.sheet .meta{font-size:13px;color:#6b5b52;margin-bottom:6px}
+.score{position:absolute;right:14px;top:8px;font-family:"Nanum Pen Script";color:var(--red);font-size:46px;line-height:1;text-align:center}
+.score::before{content:"";position:absolute;inset:-6px -10px;border:3px solid var(--red);border-radius:50% 45% 52% 48%;transform:rotate(-8deg);opacity:.85}
+.score small{display:block;font-size:24px}
+.perfect{position:absolute;right:70px;top:4px;font-family:"Nanum Pen Script";color:var(--red);font-size:28px;transform:rotate(-14deg)}
+ul{list-style:none;margin:8px 0 0;padding:0;font-family:Gaegu;font-size:19px;line-height:28px}
+li .no{color:#8a7a70;margin-right:6px}li .bad{color:var(--ink);text-decoration:line-through var(--red) 2px}
+li .fix{font-family:"Nanum Pen Script";color:var(--red);font-size:24px;margin-left:8px}
+.allok{font-family:"Nanum Pen Script";color:var(--red);font-size:30px;line-height:28px;margin-top:8px}
+</style></head><body>
+<header><svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#fff"/><text x="20" y="27" text-anchor="middle" font-family="Jua" font-size="18" fill="#d71718">T</text></svg>
+<div><h1>Lingua Teens 단어시험</h1><div class="sub">오늘 채점된 시험지를 그대로 봐요 ✏️</div></div></header>
+<nav class="days" id="days"></nav><nav class="classes" id="classes"></nav><main id="grid"></main>
+<script src="data.js"></script>
+<script>
+let day = TV.today, cls = "전체";
+function render() {
+  days.innerHTML = TV.days.map(d => `<button class="${d===day?'on':''}" onclick="day='${d}';render()">${TV.label(d)}</button>`).join("");
+  const rows = TV.results[day];
+  const cl = ["전체", ...new Set(rows.map(r => r.cls))];
+  classes.innerHTML = cl.map(c => `<button class="${c===cls?'on':''}" onclick="cls='${c}';render()">${c}</button>`).join("");
+  grid.innerHTML = rows.filter(r => cls==="전체" || r.cls===cls).map((r,i) => `
+    <article class="sheet" style="--r:${(i%3-1)*0.6}deg">
+      ${r.score===100?'<span class="perfect">참 잘했어요!</span>':''}
+      <div class="who">${r.name}</div><div class="meta">${r.cls} · ${r.subject}</div>
+      <div class="score">${r.correct}<small>/${r.q}</small></div>
+      ${r.wrongs.length ? `<ul>${r.wrongs.map(w=>`<li><span class="no">${w.no}.</span><span class="bad">${w.wrote||'(빈칸)'}</span><span class="fix">${w.ans}</span></li>`).join("")}</ul>` : '<div class="allok">다 맞았어요 ♥</div>'}
+    </article>`).join("");
+}
+render();
+</script></body></html>

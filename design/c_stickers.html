@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>C · 반 보드 — Teens Voca</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#221815;--red:#e0281e;--c0:#fcd377;--c1:#bfe08a;--c2:#9fd3ea;--c3:#f7b9c4;--c4:#d9c6f2}
+*{box-sizing:border-box}body{margin:0;font-family:"Gowun Dodum",sans-serif;color:var(--ink);background:#2f6b4f;background-image:radial-gradient(#ffffff10 1px,transparent 1px);background-size:18px 18px;min-height:100vh}
+header{text-align:center;padding:26px 16px 8px;color:#fff}
+header h1{font-family:Jua;font-size:34px;margin:0;letter-spacing:.02em}
+header p{font-family:"Nanum Pen Script";font-size:28px;margin:4px 0 0;color:#fcd377}
+.days{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;padding:10px}
+.days a{font-family:Jua;color:#fff;opacity:.6;cursor:pointer;padding:4px 8px;border-bottom:3px solid transparent}
+.days a.on{opacity:1;border-color:#fcd377}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:26px;padding:20px 28px 60px;max-width:1300px;margin:0 auto}
+.note{position:relative;padding:22px 18px 18px;background:var(--bg);box-shadow:0 10px 18px #0003;transform:rotate(var(--r))}
+.note::before{content:"";position:absolute;top:-10px;left:50%;width:70px;height:22px;margin-left:-35px;background:#ffffff99;transform:rotate(-3deg)}
+.note h2{font-family:Jua;font-size:24px;margin:0}.note .s{font-size:12px;opacity:.7}
+.avg{position:absolute;right:16px;top:14px;font-family:"Nanum Pen Script";font-size:52px;color:var(--red);line-height:1}
+.avg span{font-size:22px}
+.kids{margin-top:12px;display:grid;gap:4px}
+.kid{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px dashed #0002;padding:3px 0}
+.kid b{font-weight:400}.kid i{font-style:normal;font-family:"Nanum Pen Script";font-size:28px;color:var(--red)}
+.kid.p i::after{content:" ★";font-size:20px}
+.miss{margin-top:10px;font-family:"Nanum Pen Script";font-size:22px;color:var(--red)}
+</style></head><body>
+<header><h1>Lingua Teens Voca Board</h1><p>오늘 우리 반은 몇 점?</p></header>
+<nav class="days" id="days"></nav><section class="board" id="board"></section>
+<script src="data.js"></script>
+<script>
+let day = TV.today;
+function render(){
+  days.innerHTML = TV.days.map(d=>`<a class="${d===day?'on':''}" onclick="day='${d}';render()">${TV.label(d)}</a>`).join("");
+  const byC = {}; TV.results[day].forEach(r=>(byC[r.cls]=byC[r.cls]||[]).push(r));
+  board.innerHTML = Object.entries(byC).map(([c,rs],i)=>{
+    const miss={}; rs.forEach(r=>r.wrongs.forEach(w=>miss[w.ans]=(miss[w.ans]||0)+1));
+    const top=Object.entries(miss).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join(", ");
+    return `<article class="note" style="--bg:var(--c${i%5});--r:${(i%2?1:-1)*(1+i%3*0.6)}deg">
+      <h2>${c}</h2><div class="s">${rs[0].subject} · ${rs[0].teacher} 선생님</div>
+      <div class="avg">${TV.avg(rs)}<span>점</span></div>
+      <div class="kids">${rs.sort((a,b)=>b.score-a.score).map(r=>`<div class="kid ${r.score===100?'p':''}"><b>${r.name}</b><i>${r.correct}/${r.q}</i></div>`).join("")}</div>
+      ${top?`<div class="miss">많이 틀린 단어: ${top}</div>`:''}</article>`}).join("");
+}
+render();
+</script></body></html>

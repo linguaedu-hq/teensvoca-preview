@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>B · 깔끔 대시보드 — Teens Voca</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Caveat:wght@700&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbf8f1;--card:#fff;--ink:#221815;--mute:#7a6d66;--red:#e0281e;--yellow:#f8b62d;--green:#89b929;--blue:#158ab2;--brown:#673a1b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Gowun Dodum",sans-serif}
+.top{display:flex;justify-content:space-between;align-items:center;padding:20px 28px}
+.brand{font-family:Jua;font-size:24px}.brand b{color:var(--yellow)}
+select{font:inherit;padding:8px 12px;border-radius:10px;border:1.5px solid #e4dccd;background:#fff}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0 28px}
+.kpi{background:var(--card);border-radius:18px;padding:16px 18px;box-shadow:0 1px 0 #0000000d}
+.kpi .k{font-size:13px;color:var(--mute)}.kpi .v{font-family:Jua;font-size:30px;margin-top:4px}
+.kpi .v.hand{font-family:Caveat;color:var(--red);font-size:44px;line-height:1}
+.row{display:grid;grid-template-columns:1fr 1.4fr;gap:16px;padding:16px 28px 40px}
+.panel{background:var(--card);border-radius:18px;padding:18px}
+.panel h2{font-family:Jua;font-size:18px;margin:0 0 12px}
+.bar{display:grid;grid-template-columns:90px 1fr 56px;align-items:center;gap:10px;margin:10px 0}
+.bar .t{height:14px;border-radius:7px;background:#f1ebde;overflow:hidden}.bar .t i{display:block;height:100%;border-radius:7px;background:var(--yellow)}
+.bar .n{font-family:Caveat;color:var(--red);font-size:26px;text-align:right}
+table{width:100%;border-collapse:collapse;font-size:14px}th{text-align:left;color:var(--mute);font-weight:400;padding:6px;border-bottom:1px solid #eee5d6}
+td{padding:8px 6px;border-bottom:1px dashed #eee5d6;vertical-align:top}
+td.sc{font-family:Caveat;color:var(--red);font-size:28px;white-space:nowrap}
+.w{display:inline-block;margin:1px 6px 1px 0;font-family:"Nanum Pen Script";font-size:20px}
+.w s{text-decoration-color:var(--red);text-decoration-thickness:2px}.w em{font-style:normal;color:var(--red)}
+.chip{white-space:nowrap;font-size:11px;background:#eef6e0;color:#4c6c12;border-radius:6px;padding:2px 6px}
+@media(max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr}}
+</style></head><body>
+<div class="top"><div class="brand">Lingua <b>Teens</b> · Voca Report</div><select id="day"></select></div>
+<section class="kpis" id="kpis"></section>
+<div class="row"><section class="panel"><h2>반별 평균</h2><div id="bars"></div></section>
+<section class="panel"><h2>학생별 결과</h2><table><thead><tr><th>학생</th><th>반</th><th>점수</th><th>틀린 단어</th></tr></thead><tbody id="tb"></tbody></table></section></div>
+<script src="data.js"></script>
+<script>
+day.innerHTML = TV.days.slice().reverse().map(d=>`<option value="${d}">${TV.label(d)}</option>`).join("");
+day.onchange = render;
+function render(){
+  const rows = TV.results[day.value]; const byC = {};
+  rows.forEach(r=>(byC[r.cls]=byC[r.cls]||[]).push(r));
+  kpis.innerHTML = [["응시", rows.length+"명"],["평균", TV.avg(rows)+"점", 1],["만점", rows.filter(r=>r.score===100).length+"명", 1],["반", Object.keys(byC).length+"개"]]
+    .map(([k,v,h])=>`<div class="kpi"><div class="k">${k}</div><div class="v ${h?'hand':''}">${v}</div></div>`).join("");
+  bars.innerHTML = Object.entries(byC).map(([c,rs])=>{const a=TV.avg(rs);return `<div class="bar"><span>${c}</span><span class="t"><i style="width:${a}%"></i></span><span class="n">${a}</span></div>`}).join("");
+  tb.innerHTML = rows.slice().sort((a,b)=>b.score-a.score).map(r=>`<tr><td>${r.name}${r.score===100?' <span class="chip">만점</span>':''}</td><td>${r.cls}</td><td class="sc">${r.correct}/${r.q}</td>
+    <td>${r.wrongs.map(w=>`<span class="w">${w.no}. <s>${w.wrote||'빈칸'}</s> <em>${w.ans}</em></span>`).join("")||'—'}</td></tr>`).join("");
+}
+render();
+</script></body></html>

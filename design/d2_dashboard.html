@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>내 단어시험 | Lingua Teens Voca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Caveat:wght@700&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Lingua Teens 로고 색 */
+  --y:#fcd377;--y2:#edb033;--red:#d71718;--red-dk:#9e0f10;--g:#89b929;--b:#158ab2;--b-ink:#0f6f90;--brown:#673a1b;--ink:#221815;
+  /* 종이·먹 */
+  --ground:#fff8ea;--paper:#fffdf6;--rule:#d3e4f0;--margin:#f0a3a3;--pencil:#3f3732;--mute:#6e5f55;--track:#f1e8d6;
+  --row:42px;--ease-out:cubic-bezier(.16,1,.3,1);
+  --shadow-paper:0 1px 0 #67391b14,0 12px 28px -8px #67391b2e;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;background:var(--ground);color:var(--ink);font:16px/1.55 "Gowun Dodum",system-ui,sans-serif;caret-color:var(--red)}
+::selection{background:var(--y);color:var(--ink)}
+:focus-visible{outline:3px solid var(--b-ink);outline-offset:3px;border-radius:10px}
+button{font:inherit;color:inherit}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:1120px;margin:0 auto;padding:14px 16px 48px}
+
+/* 머리 */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:52px}
+.brand{font-family:Jua;font-size:20px;line-height:1.1;white-space:nowrap}.brand b{color:var(--y2);font-weight:400}
+.brand small{display:block;font-family:"Gowun Dodum";font-size:13px;color:var(--mute);margin-top:2px}
+.me{display:flex;align-items:center;gap:4px}
+.me .nm{font-family:Jua;font-size:16px;padding:0 6px}
+.out{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border:0;border-radius:12px;background:transparent;color:var(--mute);font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.out:hover{color:var(--ink)}
+h1{font-family:Jua;font-weight:400;font-size:clamp(28px,6vw,36px);line-height:1.15;margin:14px 0 4px;letter-spacing:-.01em}
+h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%);padding:0 2px}
+.sub{color:var(--mute);margin:0 0 14px;font-size:16px}
+.sub b{color:var(--ink);font-weight:400;font-family:Jua}
+
+/* 날짜 흐름 : 매일 한 칸 */
+.flow{display:flex;gap:8px;overflow-x:auto;padding:6px 2px 12px;scroll-snap-type:x proximity;scrollbar-width:thin;scrollbar-color:var(--y2) transparent;
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);mask:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 14px),transparent 100%);padding-inline:14px}
+.flow::-webkit-scrollbar{height:6px}.flow::-webkit-scrollbar-thumb{background:var(--y2);border-radius:3px}
+.day{flex:0 0 auto;width:76px;min-height:72px;border:2px solid #ecdcbc;border-radius:14px;background:#fff;padding:7px 4px 5px;text-align:center;cursor:pointer;scroll-snap-align:center;
+  transition:transform .2s var(--ease-out),border-color .2s}
+.day:hover{transform:translateY(-2px)}
+.day .d{display:block;font-size:13px;color:var(--mute);line-height:1.2}
+.day .s{display:block;font-family:Caveat;font-size:28px;color:var(--red);line-height:1.15}
+.day .s.wait{font-family:"Nanum Pen Script";font-size:22px;line-height:1.5}
+.day.today:not(.graded){border-style:dashed;border-color:var(--red)}
+.day[aria-pressed="true"]{border-color:var(--ink);border-style:solid;box-shadow:0 3px 0 var(--ink)}
+.day.stamp .s{animation:stamp .5s var(--ease-out) both}
+@keyframes stamp{0%{opacity:0;transform:scale(1.8) rotate(-10deg)}100%{opacity:1;transform:none}}
+
+/* 시험지 + 기록 */
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:20px;margin-top:6px;align-items:start}
+
+.sheet{position:relative;background:var(--paper);border-radius:4px 4px 6px 6px;box-shadow:var(--shadow-paper);overflow:hidden;
+  background-image:linear-gradient(90deg,transparent 52px,var(--margin) 52px,var(--margin) 54px,transparent 54px)}
+.sheet-h{position:relative;padding:18px 136px 12px 70px;min-height:112px}
+.sheet h2{font-family:Jua;font-weight:400;font-size:22px;line-height:1.2;margin:0 0 4px}
+.sheet .meta{font-size:14px;color:var(--mute);line-height:1.45}
+.items{list-style:none;margin:0;padding:0 0 24px;font-family:"Nanum Pen Script";font-size:30px;line-height:1;
+  background:repeating-linear-gradient(transparent 0 calc(var(--row) - 1px),var(--rule) calc(var(--row) - 1px) var(--row));background-position:0 0}
+.items li{position:relative;display:grid;grid-template-columns:52px 1fr;align-items:end;height:var(--row);padding-bottom:7px}
+.items .n{position:relative;justify-self:center;width:34px;text-align:center;font-family:Caveat;font-size:21px;color:#7a6a60;line-height:1}
+.items .ans{display:flex;align-items:flex-end;gap:12px;padding-left:16px;min-width:0}
+.items .w{position:relative;color:var(--pencil);white-space:nowrap}
+.items .w.blank{display:inline-block;width:3.2em;height:1px}
+.items .fix{color:var(--red);white-space:nowrap;clip-path:inset(0 100% 0 0)}
+.mark{position:absolute;left:50%;top:50%;width:46px;height:38px;margin:-21px 0 0 -23px;overflow:visible;pointer-events:none}
+.mark path{opacity:0;fill:none;stroke:var(--red);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:url(#ink)}
+.strike{position:absolute;left:-3px;right:-3px;top:56%;height:2.6px;border-radius:2px;background:var(--red);transform-origin:left;transform:scaleX(0) rotate(-2deg)}
+.total{position:absolute;right:16px;top:10px;width:116px;height:92px;text-align:center}
+.total svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.total svg path{opacity:0;fill:none;stroke:var(--red);stroke-width:3.2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:url(#ink)}
+.total .v{position:relative;display:block;font-family:Caveat;color:var(--red);font-size:48px;line-height:92px;clip-path:inset(0 100% 0 0)}
+.total .v small{font-size:24px}
+.praise{position:absolute;right:20px;top:102px;font-family:"Nanum Pen Script";color:var(--red);font-size:30px;line-height:1;transform:rotate(-7deg);clip-path:inset(0 100% 0 0)}
+
+/* 채점이 끝난(고정) 모습 */
+.done .mark path,.done .total svg path{opacity:1;stroke-dashoffset:0}
+.done .fix,.done .total .v,.done .praise{clip-path:inset(0 0 0 0)}
+.done .strike{transform:scaleX(1) rotate(-2deg)}
+/* 채점 중 : 빨간 펜이 위에서 아래로 */
+.run .mark path{animation:draw .3s cubic-bezier(.3,.7,.4,1) var(--t) forwards}
+.run .strike{animation:strike .2s ease-out calc(var(--t) + .1s) forwards}
+.run .fix{animation:write .36s cubic-bezier(.4,.1,.5,1) calc(var(--t) + .24s) forwards}
+.run .total svg path{animation:draw .7s cubic-bezier(.3,.7,.4,1) var(--t) forwards}
+.run .total .v{animation:write .45s ease-out calc(var(--t) + .5s) forwards}
+.run .praise{animation:write .55s ease-out calc(var(--t) + 1s) forwards}
+@keyframes draw{0%{opacity:1;stroke-dashoffset:1}100%{opacity:1;stroke-dashoffset:0}}
+@keyframes strike{to{transform:scaleX(1) rotate(-2deg)}}
+@keyframes write{to{clip-path:inset(0 0 0 0)}}
+.redpen{position:absolute;left:0;top:0;width:84px;height:84px;pointer-events:none;opacity:0;z-index:4;filter:drop-shadow(2px 6px 4px #67391b40)}
+.fade-in{animation:fade .35s ease-out both}@keyframes fade{from{opacity:0}}
+
+/* 채점하기 : 누가 봐도 눌러야 하는 것 */
+.cta{position:absolute;inset:112px 0 0;z-index:3;background:linear-gradient(#fffdf6d9,#fffdf6b3 40%,#fffdf6d9);transition:opacity .3s ease-out}
+.cta.leave{opacity:0;pointer-events:none}
+.cta-in{position:sticky;top:max(16vh,110px);display:flex;flex-direction:column;align-items:center;padding:56px 16px 24px}
+.gwrap{position:relative;animation:bob 1.8s ease-in-out infinite}
+.gwrap .ring{position:absolute;inset:-4px;border-radius:999px;border:3px solid var(--red);opacity:0;animation:ring 1.8s ease-out infinite;pointer-events:none}
+.gwrap .ring+.ring{animation-delay:.9s}
+.gbtn{position:relative;display:inline-flex;align-items:center;gap:12px;min-height:68px;font-family:Jua;font-size:30px;color:#fff;background:var(--red);border:0;border-radius:999px;
+  padding:12px 38px 12px 26px;cursor:pointer;overflow:hidden;box-shadow:0 6px 0 var(--red-dk),0 16px 28px -6px #d7171866;transition:transform .15s var(--ease-out),box-shadow .15s}
+.gbtn:hover{transform:translateY(-2px) scale(1.04)}
+.gbtn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--red-dk),0 6px 12px -4px #d7171855}
+.gbtn:focus-visible{outline:4px solid var(--b-ink);outline-offset:6px;border-radius:999px}
+.gbtn[disabled]{cursor:progress}
+.gbtn .shine{position:absolute;top:-10px;bottom:-10px;width:44px;left:-70px;background:linear-gradient(90deg,transparent,#ffffff8c,transparent);transform:skewX(-20deg);animation:shine 2.6s ease-in-out infinite}
+.gbtn .pen{width:38px;height:38px;flex:0 0 auto;animation:wiggle .9s ease-in-out infinite;transform-origin:20% 80%}
+.gbtn.loading .pen{animation-duration:.35s}
+.hint{position:relative;margin-top:16px;font-family:"Nanum Pen Script";font-size:30px;line-height:1.1;color:var(--red);text-align:center}
+.hint svg{position:absolute;left:-46px;top:-30px;width:44px;height:44px;overflow:visible}
+.hint svg path{fill:none;stroke:var(--red);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.err{margin-top:10px;color:var(--red-dk);font-size:15px;min-height:1.5em;text-align:center}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes ring{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.28)}}
+@keyframes shine{0%{left:-70px}55%,100%{left:115%}}
+@keyframes wiggle{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(12deg)}}
+
+/* 기록 */
+.panel{background:#fff;border-radius:18px;padding:18px;box-shadow:0 1px 0 #ecdcbc,0 10px 24px -10px #67391b2e}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--track);border-radius:14px;margin-bottom:16px}
+.tabs button{min-height:44px;font-family:Jua;font-size:17px;border:0;border-radius:11px;background:transparent;color:var(--brown);cursor:pointer;transition:background .2s,color .2s}
+.tabs button[aria-selected="true"]{background:var(--b-ink);color:#fff;box-shadow:0 2px 0 #0a4f67}
+.head{display:grid;grid-template-columns:128px 1fr;align-items:center;gap:16px}
+.head svg{width:128px;height:128px;display:block}
+.head .arc{transition:none;animation:arc .9s var(--ease-out) both}
+@keyframes arc{from{stroke-dashoffset:var(--c)}}
+.head .big{font-family:Caveat;font-size:40px;fill:var(--red)}
+.head .none{font-family:"Nanum Pen Script";font-size:26px;fill:var(--mute)}
+.facts h3{font-family:Jua;font-weight:400;font-size:18px;margin:0 0 4px}
+.facts p{margin:0;color:var(--mute);font-size:15px}
+.facts .cq{font-family:Jua;font-size:24px;color:var(--ink);line-height:1.3}
+.facts .cq span{font-size:16px;color:var(--mute)}
+.bars{margin-top:16px;display:grid;gap:4px}
+.br{display:grid;grid-template-columns:78px 1fr 64px;align-items:center;gap:10px;min-height:38px;font-size:15px}
+.br .k{color:var(--mute);white-space:nowrap}
+.br .t{height:12px;border-radius:6px;background:var(--track);overflow:hidden}
+.br .t i{display:block;height:100%;border-radius:6px;background:var(--y2);transform-origin:left;animation:grow .7s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms)}
+.br .v{text-align:right;line-height:1}
+.br .v b{display:block;font-family:Caveat;font-size:24px;color:var(--red);font-weight:700}
+.br .v small{font-size:12px;color:var(--mute)}
+.br.cur .k{color:var(--ink);font-family:Jua}
+.br.cur .t i{background:var(--red)}
+@keyframes grow{from{transform:scaleX(0)}}
+.empty{margin:12px 0 0;color:var(--mute);font-size:15px}
+.review{margin-top:18px;padding-top:14px;border-top:1px dashed #e4d3b2}
+.review h3{font-family:Jua;font-weight:400;font-size:17px;margin:0 0 8px}
+.review ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 16px}
+.review li{font-family:"Nanum Pen Script";font-size:28px;color:var(--red);line-height:1.2}
+.review li small{font-family:"Gowun Dodum";font-size:13px;color:var(--mute);margin-left:4px}
+.review .clear{font-family:"Nanum Pen Script";font-size:28px;color:var(--g);position:relative;display:inline-block}
+.review .clear svg{position:absolute;left:-4px;right:-4px;bottom:-6px;width:calc(100% + 8px);height:10px}
+.note{margin-top:28px;font-size:13px;color:var(--mute);text-align:center}
+.note button{border:0;background:none;color:var(--mute);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px;padding:0 8px}
+
+@media (min-width:900px){.panel{position:sticky;top:16px}}
+@media (max-width:899px){.grid{grid-template-columns:1fr}}
+@media (max-width:420px){
+  .sheet-h{padding:16px 112px 10px 66px;min-height:104px}
+  .total{right:6px;top:8px;transform:scale(.86);transform-origin:right top}
+  .praise{right:10px;top:92px;font-size:26px}
+  .items{font-size:28px}
+  .gbtn{font-size:27px;min-height:62px;padding:10px 30px 10px 22px}
+  .head{grid-template-columns:112px 1fr;gap:12px}.head svg{width:112px;height:112px}
+  .panel{padding:16px 14px}
+}
+@media (prefers-reduced-motion:reduce){
+  .gwrap,.gwrap .ring,.gbtn .shine,.gbtn .pen,.head .arc,.br .t i,.day.stamp .s{animation:none}
+  .gwrap .ring:first-child{opacity:.45}
+  .gbtn,.day,.cta{transition:none}
+}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="1" seed="4"/><feDisplacementMap in="SourceGraphic" scale="1.4"/></filter></svg>
+<div class="wrap">
+<header class="top">
+  <div class="brand">Lingua <b>Teens</b><small>단어시험 채점</small></div>
+  <div class="me"><span class="nm" id="who"></span><button class="out" id="logout" type="button">로그아웃</button></div>
+</header>
+<main>
+<h1>안녕, <em id="nm"></em>!</h1>
+<p class="sub" id="sub" aria-live="polite"></p>
+<nav class="flow" id="flow" aria-label="날짜별 시험지"></nav>
+<div class="grid">
+  <section class="sheet" id="sheet" aria-labelledby="sheet-title"></section>
+  <section class="panel" aria-label="정답률 기록">
+    <div class="tabs" id="tabs" role="tablist" aria-label="기간"><button role="tab" data-k="day" aria-selected="true">오늘</button><button role="tab" data-k="week" aria-selected="false">주별</button><button role="tab" data-k="month" aria-selected="false">월별</button></div>
+    <div id="stat" aria-live="polite"></div>
+  </section>
+</div>
+</main>
+<p class="note">시안용 가짜 데이터(학생 한 명 Mia) <button type="button" id="reset">채점 기록 지우고 다시 보기</button></p>
+</div>
+<script src="data.js?v=4"></script>
+<script>
+// 로그인한 학생 한 명 : 실제로는 서버가 이 학생 것만 내려준다(다른 학생 결과는 페이지에 없음)
+const ME = { name: "Mia", cls: "LIV1-4" };
+const API = TV.student(ME.name, ME.cls);
+const TODAY = API.history[API.history.length - 1];
+const $ = id => document.getElementById(id);
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
+const KEY = d => `tv-graded-${ME.cls}-${ME.name}-${d}`;
+// 지난 날은 이미 채점(고정). 오늘 것만 학생이 처음 열 때 「채점하기」. 한 번 채점하면 고정.
+const isGraded = d => d !== TODAY || store.get(KEY(d)) === "1";
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+const rate = rs => { const q = rs.reduce((a,r)=>a+r.q,0), c = rs.reduce((a,r)=>a+r.correct,0); return { q, c, p: q ? Math.round(c*100/q) : 0 }; };
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[ch]));
+let day = TODAY, tab = "day", busy = false;
+
+// 손으로 그린 동그라미 : 문항마다 조금씩 다르게(같은 문항은 늘 같은 모양)
+function rnd(seed){ let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
+function handCircle(seed, w, h, turns = 1.12){
+  const r = rnd(seed), cx = w/2, cy = h/2, pts = [], n = 10, a0 = -2.4 + r()*.4;
+  for (let i = 0; i <= n; i++){ const a = a0 + (Math.PI*2*turns) * i/n, k = 1 + (r()-.5)*.14 - (i/n)*.05;
+    pts.push([cx + Math.cos(a)*(w/2-3)*k, cy + Math.sin(a)*(h/2-3)*k]); }
+  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < pts.length-1; i++){ const p0 = pts[i-1]||pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2]||p2;
+    const c1 = [p1[0]+(p2[0]-p0[0])/6, p1[1]+(p2[1]-p0[1])/6], c2 = [p2[0]-(p3[0]-p1[0])/6, p2[1]-(p3[1]-p1[1])/6];
+    d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; }
+  return d;
+}
+function handSlash(seed){ const r = rnd(seed); return `M${(5+r()*4).toFixed(1)} ${(34+r()*3).toFixed(1)} Q${(20+r()*4).toFixed(1)} ${(22-r()*4).toFixed(1)} ${(40+r()*3).toFixed(1)} ${(3+r()*3).toFixed(1)}`; }
+
+const PEN = `<svg viewBox="0 0 84 84" aria-hidden="true"><g transform="rotate(-38 42 42)"><rect x="18" y="35" width="56" height="14" rx="3" fill="#d71718" stroke="#221815" stroke-width="2"/><rect x="58" y="35" width="7" height="14" fill="#9e0f10"/><path d="M18 35 L4 42 L18 49 Z" fill="#fce9c8" stroke="#221815" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 39.6 L4 42 L8.5 44.4 Z" fill="#d71718"/><rect x="66" y="31" width="12" height="4" rx="2" fill="#221815"/></g></svg>`;
+const BTN_PEN = `<svg class="pen" viewBox="0 0 40 40" aria-hidden="true"><g transform="rotate(-40 20 20)"><rect x="9" y="15" width="27" height="10" rx="2" fill="#fcd377" stroke="#fff" stroke-width="2"/><rect x="30" y="15" width="6" height="10" fill="#fff"/><path d="M9 15 L1 20 L9 25 Z" fill="#fce9c8" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M3.6 18.5 L1 20 L3.6 21.5 Z" fill="#221815"/></g></svg>`;
+const ARROW = `<svg viewBox="0 0 44 44" aria-hidden="true"><path d="M40 40 C30 34 18 30 12 14"/><path d="M5 20 L12 12 L18 21"/></svg>`;
+
+function renderTop(){
+  $("who").textContent = ME.name; $("nm").textContent = ME.name;
+  const sub = $("sub");
+  if (day === TODAY && !isGraded(day)) sub.innerHTML = "오늘 시험지가 도착했어요. <b>채점하기</b>를 눌러 보세요.";
+  else { const r = API.result(day); sub.innerHTML = `${day === TODAY ? "오늘" : TV.label(day)} <b>${r.q}문제 중 ${r.correct}문제</b> 맞혔어요.`; }
+}
+function renderFlow(stampDay){
+  const flow = $("flow");
+  flow.innerHTML = API.history.map(d => { const g = isGraded(d), r = g ? API.result(d) : null, isT = d === TODAY;
+    return `<button type="button" class="day${isT?' today':''}${g?' graded':''}${d===stampDay?' stamp':''}" data-d="${d}" aria-pressed="${d===day}" aria-label="${TV.label(d)} ${g ? r.score+'점' : '채점 전'}">
+      <span class="d">${isT ? '오늘' : TV.label(d)}</span>${g ? `<span class="s">${r.score}</span>` : '<span class="s wait">채점 전</span>'}</button>`; }).join("");
+  const on = flow.querySelector('[aria-pressed="true"]');
+  if (on) flow.scrollLeft = on.offsetLeft - flow.clientWidth/2 + on.offsetWidth/2;
+}
+function sheetHead(s){
+  return `<div class="sheet-h"><h2 id="sheet-title">${TV.label(s.d)} 시험지</h2><div class="meta">${esc(s.subject)} ${s.q}문제<br>${esc(s.cls)} 담임 ${esc(s.teacher)}</div>`;
+}
+// 채점 전: 학생이 쓴 단어만. 정답·맞음 여부·점수는 DOM 에 없다.
+function renderBlank(){
+  const s = API.sheet(day), el = $("sheet");
+  el.className = "sheet";
+  el.innerHTML = sheetHead(s) + `</div><ol class="items">${s.words.map(w => `<li><span class="n">${w.no}</span><span class="ans">${w.wrote ? `<span class="w">${esc(w.wrote)}</span>` : '<span class="w blank"></span>'}</span></li>`).join("")}</ol>
+    <div class="cta" id="cta"><div class="cta-in"><div class="gwrap"><span class="ring"></span><span class="ring"></span>
+      <button class="gbtn" id="gbtn" type="button"><span class="shine"></span>${BTN_PEN}<span class="lbl">채점하기</span></button></div>
+      <div class="hint">${ARROW}눌러서 오늘 시험지 채점!</div><div class="err" id="err" role="alert"></div></div></div>`;
+  $("gbtn").onclick = grade;
+}
+// 채점된 시험지. animate = 빨간 펜이 지금 매기는 연출
+function renderGraded(r, animate){
+  const el = $("sheet"), step = Math.min(.22, Math.max(.12, 2.8 / r.q));
+  let t = .35; const times = [];
+  const items = r.items.map(it => { const at = t; times.push({ no: it.no, at, ok: it.ok }); t += step + (it.ok ? 0 : .6);
+    const mark = it.ok ? handCircle(it.no*7+3, 46, 38) : handSlash(it.no*5+1);
+    const word = it.wrote ? `<span class="w">${esc(it.wrote)}${it.ok ? '' : '<span class="strike"></span>'}</span>` : '<span class="w blank"></span>';
+    return `<li style="--t:${at.toFixed(2)}s" data-no="${it.no}"><span class="n">${it.no}<svg class="mark" viewBox="0 0 46 38" aria-hidden="true"><path pathLength="1" d="${mark}"/></svg></span>
+      <span class="ans">${word}${it.ok ? '' : `<span class="fix">${esc(it.ans)}</span>`}</span><span class="vh">${it.ok ? '맞음' : '틀림, 정답 ' + esc(it.ans)}</span></li>`; }).join("");
+  const tt = t + .15;
+  const praise = r.score === 100 ? '참 잘했어요!' : r.score >= 90 ? '훌륭해요!' : '';
+  el.className = "sheet " + (animate ? "run" : "done");
+  el.innerHTML = sheetHead(r) + `<div class="total" style="--t:${tt.toFixed(2)}s" aria-label="${r.q}문제 중 ${r.correct}문제 맞음"><svg viewBox="0 0 116 92" aria-hidden="true"><path pathLength="1" d="${handCircle(r.q*13+r.correct, 116, 92, 1.08)}"/></svg><span class="v">${r.correct}<small>/${r.q}</small></span></div>
+    ${praise ? `<div class="praise" style="--t:${tt.toFixed(2)}s">${praise}</div>` : ''}</div><ol class="items">${items}</ol>`;
+  return { times, end: tt + (praise ? 1.6 : 1.0) };
+}
+// 빨간 펜이 문항을 차례로 찾아가며 매긴다(Web Animations)
+function runPen(times, end){
+  const el = $("sheet"), pen = document.createElement("div"), box = el.getBoundingClientRect();
+  pen.className = "redpen"; pen.innerHTML = PEN; el.appendChild(pen);
+  const at = (node, dx = 0, dy = 0) => { const b = node.getBoundingClientRect(); return [b.left - box.left + b.width/2 + dx, b.top - box.top + b.height/2 + dy]; };
+  const pos = (x, y) => `translate(${(x - 6).toFixed(1)}px, ${(y - 66).toFixed(1)}px)`;   // 펜 끝(6,66)을 점에 맞춘다
+  const frames = [{ t: 0, x: box.width + 30, y: 40, o: 0 }];
+  times.forEach(({ no, at: t, ok }) => { const li = el.querySelector(`li[data-no="${no}"]`), [x, y] = at(li.querySelector(".n"));
+    frames.push({ t: Math.max(0, t - .1), x: x - 12, y: y - 8, o: 1 }, { t: t + .22, x: x + 10, y: y + 6, o: 1 });
+    if (!ok) { const f = li.querySelector(".fix"), [fx, fy] = at(f); const w = f.getBoundingClientRect().width;
+      frames.push({ t: t + .24, x: fx - w/2, y: fy + 6, o: 1 }, { t: t + .58, x: fx + w/2, y: fy + 4, o: 1 }); } });
+  const [tx, ty] = at(el.querySelector(".total"));
+  const tt = parseFloat(el.querySelector(".total").style.getPropertyValue("--t"));
+  frames.push({ t: tt, x: tx - 30, y: ty - 30, o: 1 }, { t: tt + .7, x: tx + 20, y: ty + 10, o: 1 }, { t: end - .2, x: tx + 70, y: ty - 40, o: 0 });
+  const T = end; frames.sort((a, b) => a.t - b.t);   // 시간순(겹치는 구간이 있어도 Web Animations 오프셋은 늘 오름차순)
+  pen.animate(frames.map(f => ({ transform: pos(f.x, f.y), opacity: f.o, offset: Math.min(1, f.t / T) })),
+    { duration: T * 1000, easing: "linear", fill: "forwards" }).finished.then(() => pen.remove()).catch(() => pen.remove());
+}
+async function grade(){
+  if (busy) return; busy = true;
+  const btn = $("gbtn"), err = $("err");
+  btn.disabled = true; btn.classList.add("loading"); btn.querySelector(".lbl").textContent = "불러오는 중"; err.textContent = "";
+  let r;
+  try { r = await API.fetchGrade(day); }
+  catch (e) { busy = false; btn.disabled = false; btn.classList.remove("loading"); btn.querySelector(".lbl").textContent = "채점하기";
+    err.textContent = "채점을 불러오지 못했어요. 다시 눌러 주세요."; return; }
+  store.set(KEY(day), "1");               // 한 번 채점되면 고정
+  const cta = $("cta"); cta.classList.add("leave");
+  const settle = () => { busy = false; renderTop(); renderFlow(day); renderStat(); };
+  if (reduced()) { renderGraded(r, false); $("sheet").classList.add("fade-in"); settle(); return; }
+  setTimeout(() => { const { times, end } = renderGraded(r, true); try { runPen(times, end); } catch (e) { document.querySelectorAll(".redpen").forEach(n => n.remove()); }
+    setTimeout(settle, end * 1000); }, 280);
+}
+function weekOf(d){ const dt = new Date(2026, +d.slice(0,2)-1, +d.slice(2)); const mon = new Date(dt); mon.setDate(dt.getDate() - ((dt.getDay()+6)%7)); return `${mon.getMonth()+1}/${mon.getDate()} 주`; }
+function renderStat(){
+  $("tabs").querySelectorAll("button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.k === tab)));
+  const done = API.history.filter(isGraded).map(d => ({ d, r: API.result(d) }));
+  let groups, curKey;
+  if (tab === "day") { groups = done.slice(-7).map(x => [TV.label(x.d), [x.r], x.d]); curKey = day; }
+  else { const m = new Map(); done.forEach(x => { const k = tab === "week" ? weekOf(x.d) : `${+x.d.slice(0,2)}월`; if (!m.has(k)) m.set(k, []); m.get(k).push(x.r); });
+    groups = [...m.entries()].map(([k, rs]) => [k, rs, k]); curKey = groups.length ? groups[groups.length-1][2] : null; }
+  const head = tab === "day" ? (isGraded(day) ? [API.result(day)] : []) : (groups.length ? groups[groups.length-1][1] : []);
+  const R = rate(head), C = 2 * Math.PI * 50;
+  const title = tab === "day" ? (isGraded(day) ? `${day === TODAY ? '오늘' : TV.label(day)} 정답률` : '오늘은 아직 채점 전') : tab === "week" ? '이번 주 정답률' : '이번 달 정답률';
+  const ring = R.q ? `<circle class="arc" cx="64" cy="64" r="50" fill="none" stroke="#d71718" stroke-width="13" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" style="--c:${C.toFixed(1)};stroke-dashoffset:${(C*(1-R.p/100)).toFixed(1)}" transform="rotate(-90 64 64)"/>
+      <text x="64" y="77" text-anchor="middle" class="big">${R.p}%</text>` : `<text x="64" y="72" text-anchor="middle" class="none">채점 전</text>`;
+  const miss = {}; (tab === "day" ? head : done.map(x => x.r)).forEach(r => r.wrongs.forEach(w => miss[w.ans] = (miss[w.ans]||0) + 1));
+  const words = Object.entries(miss).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  const uline = `<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6 C25 2 55 9 98 4" fill="none" stroke="#89b929" stroke-width="3" stroke-linecap="round"/></svg>`;
+  let review;
+  if (!head.length && tab === "day") review = `<p class="empty">채점하면 다시 외울 단어가 여기에 나와요.</p>`;
+  else if (!words.length) review = `<span class="clear">틀린 단어가 없어요${uline}</span>`;
+  else review = `<ul>${words.map(([w,n]) => `<li>${esc(w)}${n > 1 ? `<small>${n}번</small>` : ''}</li>`).join("")}</ul>`;
+  $("stat").innerHTML = `<div class="head"><svg viewBox="0 0 128 128" role="img" aria-label="${title} ${R.q ? R.p + '퍼센트' : '없음'}"><circle cx="64" cy="64" r="50" fill="none" stroke="#f1e8d6" stroke-width="13"/>${ring}</svg>
+      <div class="facts"><h3>${title}</h3>${R.q ? `<div class="cq">${R.c}<span> / ${R.q}문제</span></div><p>맞힌 문제 / 전체 문제</p><p>시험 ${head.length}번</p>` : '<p>시험지를 채점하면 정답률이 나와요.</p>'}</div></div>
+    <div class="bars">${groups.length ? groups.map(([k, rs, key], i) => { const x = rate(rs);
+      return `<div class="br${key === curKey ? ' cur' : ''}"><span class="k">${k}</span><span class="t"><i style="width:${x.p}%;--i:${i}"></i></span><span class="v"><b>${x.p}%</b><small>${x.c}/${x.q}</small></span></div>`; }).join("") : ''}</div>
+    <div class="review"><h3>${tab === "day" ? '다시 외울 단어' : '자주 틀린 단어'}</h3>${review}</div>`;
+}
+function renderSheet(){ if (isGraded(day)) renderGraded(API.result(day), false); else renderBlank(); }
+function renderAll(){ renderTop(); renderFlow(); renderSheet(); renderStat(); }
+
+$("flow").onclick = e => { const b = e.target.closest(".day"); if (!b || busy) return; day = b.dataset.d; renderAll(); };
+$("tabs").onclick = e => { const b = e.target.closest("button"); if (!b) return; tab = b.dataset.k; renderStat(); };
+$("tabs").onkeydown = e => { if (!["ArrowLeft","ArrowRight"].includes(e.key)) return; const ks = ["day","week","month"];
+  tab = ks[(ks.indexOf(tab) + (e.key === "ArrowRight" ? 1 : 2)) % 3]; renderStat(); $("tabs").querySelector(`[data-k="${tab}"]`).focus(); };
+$("logout").onclick = () => { store.del("tv-auto"); location.href = "d2_login.html"; };
+$("reset").onclick = () => { if (busy) return; store.del(KEY(TODAY)); day = TODAY; renderAll(); };
+renderAll();
+</script></body></html>

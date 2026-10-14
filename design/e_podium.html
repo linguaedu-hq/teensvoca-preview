@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E · 오늘의 단어왕 — Teens Voca</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#221815;--red:#e0281e;--y:#fcd377;--y2:#edb033;--g:#89b929;--b:#158ab2;--br:#673a1b}
+*{box-sizing:border-box}body{margin:0;font-family:"Gowun Dodum",sans-serif;color:var(--ink);background:linear-gradient(#fff6dc,#fffdf7 40%)}
+.hero{text-align:center;padding:28px 16px 6px}.hero .d{font-family:Jua;color:var(--br)}
+.hero h1{font-family:Jua;font-size:40px;margin:4px 0}.hero h1 span{color:var(--red)}
+.days{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:8px 0}
+.days button{font-family:Jua;border:2px solid var(--y2);background:#fff;border-radius:999px;padding:3px 10px;cursor:pointer}.days button.on{background:var(--y2);color:#fff}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;padding:20px}
+.p{width:150px;text-align:center}.p .nm{font-family:Jua;font-size:20px}.p .cl{font-size:12px;opacity:.7}
+.p .blk{margin-top:8px;border-radius:14px 14px 0 0;display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-family:"Nanum Pen Script";color:var(--red);font-size:46px}
+.p1 .blk{height:150px;background:var(--y)}.p2 .blk{height:110px;background:#e7f2d2}.p3 .blk{height:80px;background:#dcecf5}
+.crown{font-size:30px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:1100px;margin:0 auto;padding:10px 20px 50px}
+.box{background:#fff;border-radius:20px;padding:18px;box-shadow:0 4px 0 #f0e2bd}
+.box h2{font-family:Jua;font-size:20px;margin:0 0 10px}
+.rank{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed #eee}
+.rank .r{font-family:Jua;width:26px;color:var(--br)}.rank .c{flex:1;font-family:Jua}
+.rank .bar{flex:2;height:12px;background:#f5efe0;border-radius:6px;overflow:hidden}.rank .bar i{display:block;height:100%;background:var(--g)}
+.rank .v{font-family:"Nanum Pen Script";color:var(--red);font-size:30px;width:52px;text-align:right}
+.cloud{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.cloud span{font-family:"Nanum Pen Script";color:var(--red);line-height:1.1}
+.cloud span small{font-family:"Gowun Dodum";font-size:11px;color:#9a8c84;margin-left:2px}
+@media(max-width:760px){.two{grid-template-columns:1fr}.p{width:30%}}
+</style></head><body>
+<section class="hero"><div class="d" id="dl"></div><h1>오늘의 <span>단어왕</span> 👑</h1></section>
+<nav class="days" id="days"></nav>
+<section class="podium" id="podium"></section>
+<section class="two"><div class="box"><h2>반별 평균 순위</h2><div id="ranks"></div></div>
+<div class="box"><h2>오늘 많이 틀린 단어</h2><div class="cloud" id="cloud"></div></div></section>
+<script src="data.js"></script>
+<script>
+let day = TV.today;
+function render(){
+  dl.textContent = TV.label(day) + " 채점";
+  days.innerHTML = TV.days.map(d=>`<button class="${d===day?'on':''}" onclick="day='${d}';render()">${TV.label(d)}</button>`).join("");
+  const rows = TV.results[day].slice().sort((a,b)=>b.score-a.score||b.q-a.q);
+  const top = rows.slice(0,3); const order=[top[1],top[0],top[2]]; const cls=["p2","p1","p3"];
+  podium.innerHTML = order.map((r,i)=>r?`<div class="p ${cls[i]}">${i===1?'<div class="crown">👑</div>':''}<div class="nm">${r.name}</div><div class="cl">${r.cls}</div><div class="blk">${r.score}</div></div>`:'').join("");
+  const byC={}; rows.forEach(r=>(byC[r.cls]=byC[r.cls]||[]).push(r));
+  ranks.innerHTML = Object.entries(byC).map(([c,rs])=>[c,TV.avg(rs)]).sort((a,b)=>b[1]-a[1]).map(([c,a],i)=>`<div class="rank"><span class="r">${i+1}</span><span class="c">${c}</span><span class="bar"><i style="width:${a}%"></i></span><span class="v">${a}</span></div>`).join("");
+  const miss={}; rows.forEach(r=>r.wrongs.forEach(w=>miss[w.ans]=(miss[w.ans]||0)+1));
+  const m=Object.entries(miss).sort((a,b)=>b[1]-a[1]).slice(0,16); const mx=m.length?m[0][1]:1;
+  cloud.innerHTML = m.map(([w,n])=>`<span style="font-size:${20+26*n/mx}px">${w}<small>${n}</small></span>`).join("");
+}
+render();
+</script></body></html>

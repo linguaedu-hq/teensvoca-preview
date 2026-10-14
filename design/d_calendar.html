@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>D · 날짜 흐름 — Teens Voca</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Caveat:wght@700&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#221815;--mute:#8a7d75;--red:#e0281e;--y:#fcd377;--g:#89b929;--b:#158ab2}
+*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--ink);font-family:"Gowun Dodum",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:24px}
+h1{font-family:Jua;font-size:30px;margin:0}h1 em{font-style:normal;background:linear-gradient(transparent 60%,var(--y) 60%)}
+.lead{color:var(--mute);margin:6px 0 20px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button{font-family:Jua;border:0;border-radius:12px;padding:8px 14px;background:#f4f0e8;cursor:pointer}.tabs button.on{background:var(--b);color:#fff}
+.heat{overflow-x:auto;border:1.5px solid #eee4d4;border-radius:16px}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{padding:8px 6px;text-align:center;border-bottom:1px solid #f3ecdf}
+th{font-size:12px;color:var(--mute);font-weight:400}th.d{cursor:pointer}th.d.on{color:var(--red);font-weight:700}
+td.n{text-align:left;font-family:Jua;padding-left:14px;white-space:nowrap}
+td.c{font-family:Caveat;font-size:22px;color:var(--red);background:rgba(252,211,119,var(--a))}
+td.c.e{color:#ccc;background:none}
+.today{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card{border:1.5px solid #eee4d4;border-radius:14px;padding:12px 14px}
+.card .top{display:flex;justify-content:space-between;align-items:baseline}.card b{font-family:Jua;font-size:17px}
+.card .sc{font-family:"Nanum Pen Script";font-size:40px;color:var(--red);line-height:1}
+.card .ws{font-family:"Nanum Pen Script";font-size:21px;margin-top:4px}.card .ws s{text-decoration-color:var(--red)}.card .ws em{color:var(--red);font-style:normal}
+h2{font-family:Jua;font-size:20px;margin:26px 0 0}
+</style></head><body><div class="wrap">
+<h1>Lingua Teens <em>단어시험 흐름</em></h1><p class="lead">반을 고르면 날짜별 점수가 한눈에. 날짜를 누르면 그날 시험지를 봐요.</p>
+<div class="tabs" id="tabs"></div><div class="heat" id="heat"></div>
+<h2 id="h2"></h2><div class="today" id="today"></div></div>
+<script src="data.js"></script>
+<script>
+let cls = TV.classes[0].c, day = TV.today;
+function render(){
+  tabs.innerHTML = TV.classes.map(k=>`<button class="${k.c===cls?'on':''}" onclick="cls='${k.c}';render()">${k.c}</button>`).join("");
+  const names=[...new Set(TV.days.flatMap(d=>TV.results[d].filter(r=>r.cls===cls).map(r=>r.name)))];
+  heat.innerHTML = `<table><tr><th></th>${TV.days.map(d=>`<th class="d ${d===day?'on':''}" onclick="day='${d}';render()">${TV.label(d)}</th>`).join("")}</tr>
+   ${names.map(n=>`<tr><td class="n">${n}</td>${TV.days.map(d=>{const r=TV.results[d].find(x=>x.cls===cls&&x.name===n);
+     return r?`<td class="c" style="--a:${(r.score/100).toFixed(2)}">${r.score}</td>`:'<td class="c e">·</td>'}).join("")}</tr>`).join("")}</table>`;
+  h2.textContent = `${TV.label(day)} · ${cls} 시험지`;
+  today.innerHTML = TV.results[day].filter(r=>r.cls===cls).map(r=>`<div class="card"><div class="top"><b>${r.name}</b><span class="sc">${r.correct}/${r.q}</span></div>
+    <div class="ws">${r.wrongs.map(w=>`${w.no}. <s>${w.wrote||'빈칸'}</s> <em>${w.ans}</em>`).join(" · ")||'<em>모두 정답 ✓</em>'}</div></div>`).join("");
+}
+render();
+</script></body></html>
