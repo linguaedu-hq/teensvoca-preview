@@ -1,0 +1,119 @@
+/* 단어 퀴즈 · 오늘 복습 공통 — 대시보드(d2_dashboard.html)와 같은 공책 종이 · 같은 색 · 빨강은 채점 표시에만 */
+:root{
+  --y:#fcd377;--y2:#edb033;--red:#d71718;--red-dk:#9e0f10;--g:#89b929;--g-ink:#4d7a12;--b:#158ab2;--b-ink:#0f6f90;--brown:#673a1b;--brown-dk:#4a2810;--ink:#221815;
+  --ground:#fff8ea;--paper:#fffdf6;--paper-edge:#ecdcbc;--rule:#d3e4f0;--margin:#f0a3a3;--pencil:#3f3732;--mute:#6e5f55;
+  --row:44px;--ease-out:cubic-bezier(.23,1,.32,1);--ease-io:cubic-bezier(.77,0,.175,1);--ease-pen:cubic-bezier(.65,0,.35,1);
+  --shadow-paper:0 1px 0 #67391b14,0 12px 28px -8px #67391b2e;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;background:var(--ground);color:var(--ink);font:16px/1.55 "Gowun Dodum",system-ui,sans-serif;word-break:keep-all;overflow-wrap:anywhere;caret-color:var(--b-ink)}
+::selection{background:var(--y);color:var(--ink)}
+:focus-visible{outline:3px solid var(--b-ink);outline-offset:3px;border-radius:6px}
+button{font:inherit;color:inherit}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.wrap{max-width:720px;margin:0 auto;padding:10px 16px 0}
+
+/* 머리 : 돌아가기 + 로고 */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px}
+.back{display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 10px 0 4px;margin-left:-4px;color:var(--brown);font-family:Jua;font-size:17px;text-decoration:none;border-radius:8px}
+.back svg{width:24px;height:18px;flex:0 0 auto;transition:transform .16s var(--ease-out)}
+.back path{fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:hover) and (pointer:fine){.back:hover svg{transform:translateX(-3px)}}
+.top img{display:block;width:118px;height:auto}
+h1{font-family:Jua;font-weight:400;font-size:clamp(28px,6vw,34px);line-height:1.15;margin:8px 0 2px;letter-spacing:-.01em}
+h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%);padding:0 2px}
+.sub{color:var(--mute);margin:0 0 14px;font-size:16px}
+.sub b{color:var(--ink);font-weight:400;font-family:Jua}
+
+/* 공책 종이 한 장 : 왼쪽 빨간 여백 줄 */
+.paper{position:relative;background:var(--paper);border-radius:3px 3px 5px 5px;box-shadow:var(--shadow-paper);padding:18px 18px 22px 70px;
+  background-image:linear-gradient(90deg,transparent 52px,var(--margin) 52px,var(--margin) 54px,transparent 54px)}
+.paper .qno{position:absolute;left:0;top:18px;width:52px;text-align:center;font-family:Caveat;font-size:30px;color:#7a6a60;line-height:1}
+.paper .qno .mark{width:54px;height:44px;margin:-23px 0 0 -27px}
+.ask{font-family:Jua;font-weight:400;font-size:21px;line-height:1.3;margin:0 0 4px}
+.ask-s{margin:0 0 14px;color:var(--mute);font-size:15px}
+
+/* 빨간 펜 표시(채점 전용) */
+.mark{position:absolute;left:50%;top:50%;width:46px;height:38px;margin:-21px 0 0 -23px;overflow:visible;pointer-events:none}
+.mark path{opacity:0;fill:none;stroke:var(--red);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:url(#ink)}
+.marked .mark path{animation:draw .3s var(--ease-pen) forwards}
+.marked.x .mark path{animation-duration:.18s}
+.still .mark path{animation:none;opacity:1;stroke-dashoffset:0}
+.strike{position:absolute;left:-3px;right:-3px;top:56%;height:2.6px;border-radius:2px;background:var(--red);transform-origin:left;transform:scaleX(0) rotate(-2deg);animation:strike .18s var(--ease-out) .14s forwards}
+.fix{color:var(--red);font-family:"Nanum Pen Script";white-space:nowrap;clip-path:inset(0 100% 0 0);animation:write .36s var(--ease-pen) .3s forwards}
+.fix u{text-decoration:underline 2.5px var(--red);text-underline-offset:5px}
+.praise{display:inline-block;font-family:"Nanum Pen Script";color:var(--red);font-size:32px;line-height:1;transform:rotate(-4deg);clip-path:inset(0 100% 0 0);animation:write .34s var(--ease-out) .2s forwards}
+@keyframes draw{0%{opacity:1;stroke-dashoffset:1}100%{opacity:1;stroke-dashoffset:0}}
+@keyframes strike{to{transform:scaleX(1) rotate(-2deg)}}
+@keyframes write{to{clip-path:inset(0 0 0 0)}}
+
+/* 발음 듣기 : 파란 잉크로 그린 작은 스피커(배경 없이). 손이 닿는 면은 44px */
+.spk{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--b-ink);cursor:pointer;
+  transition:transform .14s var(--ease-out),background-color .15s ease;-webkit-tap-highlight-color:transparent}
+.spk::before{content:"";position:absolute;inset:-3px}
+.spk svg{width:28px;height:24px;overflow:visible}
+.spk path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.spk .sb{fill:#0f6f9014}
+@media (hover:hover) and (pointer:fine){.spk:hover{background:#158ab214}}
+.spk:active{transform:scale(.94)}
+.spk.on .w1{animation:wave .7s var(--ease-out) infinite}.spk.on .w2{animation:wave .7s var(--ease-out) .12s infinite}
+@keyframes wave{0%,100%{opacity:1}50%{opacity:.25}}
+.no-tts .spk{display:none}
+.spk.big{width:64px;height:64px;border:2px solid var(--b-ink);border-radius:50% 46% 52% 48%/48% 52% 46% 50%;background:#fff}
+.spk.big svg{width:38px;height:32px}
+.slow{display:inline-flex;align-items:center;gap:6px;min-height:48px;padding:0 12px;border:0;background:none;color:var(--b-ink);font-family:Jua;font-size:16px;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px;cursor:pointer}
+.no-tts .slow{display:none}
+
+/* 글자 넣는 칸 : 줄 공책 위에 연필로 쓰는 느낌 */
+.write{display:block;width:100%;max-width:420px;min-height:60px;margin:4px 0 0;padding:6px 4px 2px;border:0;border-bottom:2px solid var(--pencil);border-radius:0;background:transparent;
+  font-family:"Nanum Pen Script";font-size:40px;line-height:1.1;color:var(--pencil);outline:none;transition:border-color .15s ease}
+.write::placeholder{color:#a3958a;font-size:26px}
+.write:focus{border-bottom-color:var(--b-ink)}
+.write:focus-visible{outline:none}
+.write[readonly]{border-bottom-style:dashed;border-bottom-color:#cdbba0}
+
+/* 큰 단어 : 펜 글씨 */
+.word{position:relative;display:inline-block;font-family:"Nanum Pen Script";font-size:58px;line-height:1.05;color:var(--ink);letter-spacing:.01em}
+.word mark{background:linear-gradient(transparent 52%,var(--y) 52%,var(--y) 92%,transparent 92%);color:inherit;padding:0 1px;border-radius:2px}
+.mine{position:relative;display:inline-block;font-family:"Nanum Pen Script";font-size:36px;line-height:1.1;color:var(--pencil)}
+.mine u{text-decoration:underline 2.5px var(--red);text-underline-offset:4px}
+
+/* 아래 단추 : 엄지 닿는 아래에 붙인다. 알약 대신 각진 종이 단추 */
+.dock{position:sticky;bottom:0;z-index:3;display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;padding:22px 0 calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(#fff8ea00,var(--ground) 20px)}
+.act{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:min(320px,100%);min-height:60px;padding:10px 28px;border:0;border-radius:10px;cursor:pointer;
+  font-family:Jua;font-size:23px;color:#fff;background:var(--brown);box-shadow:0 4px 0 var(--brown-dk),0 12px 20px -10px #4a281099;text-decoration:none;
+  transition:transform .12s var(--ease-out),box-shadow .12s var(--ease-out),opacity .15s ease}
+.act svg{width:24px;height:16px;transition:transform .18s var(--ease-out)}
+.act svg path{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:hover) and (pointer:fine){.act:hover svg{transform:translateX(3px)}}
+.act:active{transform:translateY(3px) scale(.98);box-shadow:0 1px 0 var(--brown-dk),0 4px 8px -4px #4a281066}
+.act[disabled]{opacity:.45;cursor:not-allowed;box-shadow:0 4px 0 var(--brown-dk)}
+.act[disabled]:active{transform:none}
+.act.alt{color:var(--brown);background:#fff;box-shadow:inset 0 0 0 2px var(--brown),0 4px 0 var(--paper-edge)}
+.act.alt:active{box-shadow:inset 0 0 0 2px var(--brown),0 1px 0 var(--paper-edge)}
+.act:focus-visible{outline:4px solid var(--b-ink);outline-offset:4px}
+
+/* 새 문제 · 새 단어가 들어올 때 : 짧게, 이미 보이는 자리에서 */
+.enter{animation:enter .22s var(--ease-out) both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}}
+
+.note{margin:22px 0 0;font-size:13px;color:var(--mute);text-align:center}
+.note button,.note a{border:0;background:none;color:var(--mute);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px;padding:0 8px;display:inline-flex;align-items:center;font-size:13px}
+
+@media (max-width:420px){
+  .paper{padding:16px 14px 18px 62px;background-image:linear-gradient(90deg,transparent 46px,var(--margin) 46px,var(--margin) 48px,transparent 48px)}
+  .paper .qno{width:46px}
+  .word{font-size:52px}
+  .act{min-width:0;flex:1 1 auto;font-size:22px}
+}
+@media (prefers-reduced-motion:reduce){
+  .marked .mark path,.mark path{animation:none}
+  .marked .mark path{opacity:1;stroke-dashoffset:0}
+  .strike{animation:none;transform:scaleX(1) rotate(-2deg)}
+  .fix,.praise{animation:none;clip-path:none}
+  .enter{animation:none}
+  .spk.on .w1,.spk.on .w2{animation:none}
+  .act,.spk,.back svg,.act svg{transition:none}
+}
