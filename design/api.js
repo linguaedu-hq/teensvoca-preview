@@ -381,7 +381,7 @@ window.TVApi = (function () {
       if (!sb || !(await kakaoEnabled())) throw fail("kakao_not_ready");
       const target = page === "d2_admin.html" ? "d2_admin.html" : "d2_login.html";
       const redirectTo = new URL(target, location.href).href.split(/[?#]/)[0];   // 배포 = location.origin + /design/<화면>
-      const { error } = await sb.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo, scopes: "profile_nickname" } });
+      const { error } = await sb.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo, scopes: "profile_nickname plusfriends" } });
       if (error) throw fail(/provider is not enabled|unsupported provider/i.test(error.message) ? "kakao_not_ready" : "kakao_failed", error);
       return new Promise(() => {});              // 브라우저가 카카오로 넘어간다
     },
