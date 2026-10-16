@@ -212,6 +212,7 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:0;accent-co
     <button class="tab" role="tab" id="t-pending" aria-controls="p-pending" aria-selected="true">확인 대기 <span class="cnt num" id="c-pending">–</span></button>
     <button class="tab" role="tab" id="t-linked" aria-controls="p-linked" aria-selected="false" tabindex="-1">연결된 학부모 <span class="cnt num" id="c-linked">–</span></button>
     <button class="tab" role="tab" id="t-upload" aria-controls="p-upload" aria-selected="false" tabindex="-1">명단 올리기</button>
+    <button class="tab" role="tab" id="t-names" aria-controls="p-names" aria-selected="false" tabindex="-1">못 맞춘 이름 <span class="cnt num" id="c-names">–</span></button>
   </div>
 
   <!-- ① 확인 대기 -->
@@ -237,6 +238,18 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:0;accent-co
         <tbody id="l-body"></tbody>
       </table>
       <div class="empty" id="l-empty" hidden></div>
+    </div>
+  </section>
+
+  <!-- ④ 못 맞춘 이름(시험 시트의 손글씨 이름 → 학생 정하기) -->
+  <section class="panel" role="tabpanel" id="p-names" aria-labelledby="t-names" tabindex="0" hidden>
+    <div class="tools"><span class="mute" id="n-sum"></span></div>
+    <div class="box linked-wrap">
+      <table class="tbl rt" id="n-tbl">
+        <thead><tr><th scope="col">반</th><th scope="col">시트 이름</th><th scope="col">줄</th><th scope="col">마지막 날</th><th scope="col">학생 고르기</th><th scope="col"><span class="vh">정하기</span></th></tr></thead>
+        <tbody id="n-body"></tbody>
+      </table>
+      <div class="empty" id="n-empty" hidden></div>
     </div>
   </section>
 

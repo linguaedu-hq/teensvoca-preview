@@ -36,7 +36,8 @@ function renderLinked(res){
   $("kids").innerHTML = res.students.map((k) => `<li class="tag on">${tagHTML(k)}</li>`).join("");
   const sibs = res.siblings || [];
   $("sib-box").hidden = !sibs.length; $("to-dash").hidden = !!sibs.length;
-  $("sibs").innerHTML = sibs.map((k) => `<label class="tag on"><span class="lab" aria-hidden="true">이름</span><span><b>${esc(k.student_name)}</b><small>${esc(k.school)} · ${esc(k.grade)}</small></span><input type="checkbox" value="${esc(k.roster_id)}" checked aria-label="${esc(k.student_name)} 함께 연결"></label>`).join("");
+  // 형제 이름은 서버가 가려서 준다(김○○ · 학교 · 학년 없음) — 있을 때만 작은 글씨
+  $("sibs").innerHTML = sibs.map((k) => `<label class="tag on"><span class="lab" aria-hidden="true">이름</span><span><b>${esc(k.student_name)}</b>${k.school ? `<small>${esc(k.school)} · ${esc(k.grade)}</small>` : ""}</span><input type="checkbox" value="${esc(k.roster_id)}" checked aria-label="${esc(k.student_name)} 함께 연결"></label>`).join("");
   $("sibs").querySelectorAll("input").forEach((i) => i.addEventListener("change", () => {
     i.closest(".tag").classList.toggle("on", i.checked);
     const n = $("sibs").querySelectorAll("input:checked").length;

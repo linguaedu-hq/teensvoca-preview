@@ -1,7 +1,7 @@
 // 로그인한 학생 한 명 : 실제로는 서버가 이 학생 것만 내려준다(다른 학생 결과는 페이지에 없음)
 const ME = { name: "Mia", cls: "LIV1-4" };
-const API = TV.student(ME.name, ME.cls);
-const TODAY = API.history[API.history.length - 1];
+let API = TV.student(ME.name, ME.cls);          // 실제 모드에서는 아래 realStudent() 로 바뀐다(같은 꼴)
+let TODAY = API.history[API.history.length - 1];
 const $ = id => document.getElementById(id);
 const store = { get(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e){} }, del(k){ try { localStorage.removeItem(k); } catch(e){} } };
 const KEY = d => `tv-graded-${ME.cls}-${ME.name}-${d}`;
@@ -213,14 +213,54 @@ $("flow").onclick = e => { const b = e.target.closest(".day"); if (!b || busy) r
 $("logout").onclick = async () => { store.del("tv-auto"); try { await TVApi.signOut(); } catch (e) { /* 이 기기 세션만 지우면 됨 */ } location.href = "d2_login.html"; };
 $("reset").onclick = () => { if (busy) return; store.del(KEY(TODAY)); day = TODAY; peekOn = false; renderAll(); };
 renderAll();
-// 실제 모드(카카오 로그인): 이름은 my_children() 의 아이 이름 · 점수 표가 아직 없어 시험지 · 점수는 시안 데이터 그대로
+// 실제 모드(카카오 로그인): 아이 이름 = my_children() · 점수 = my_results() · 레벨 평균 = level_average()
+// 시트에는 정답 단어가 없어(학생이 쓴 답만) 문항별 정답 칸은 비어 있다 — 정답지 연결은 다음 단계.
+const isoDay = (iso) => String(iso).slice(5, 7) + String(iso).slice(8, 10);      // 'YYYY-MM-DD' → 'MMDD'
+function realStudent(kid, rows, avgRows){
+  const byDay = new Map();
+  rows.forEach(r => { const d = isoDay(r.test_date); if (!byDay.has(d)) byDay.set(d, []); byDay.get(d).push(r); });
+  const history = [...byDay.keys()].sort((a, b) => [...byDay.get(a)][0].test_date.localeCompare([...byDay.get(b)][0].test_date));
+  const last = byDay.get(history[history.length - 1])[0];
+  // 서버는 그날 레벨 평균 %만 준다(합계 · 인원 없음) → 하루를 100문제 중 평균 % 로 놓고 기간은 날들의 평균
+  const totals = new Map(avgRows.filter(a => a.avg_rate !== null && a.avg_rate !== undefined).map(a => [isoDay(a.test_date), { c: Number(a.avg_rate), q: 100 }]));
+  const resultOf = (d) => { const rs = byDay.get(d); if (!rs) return null;
+    // 같은 날 시험이 둘이면 합쳐서 한 장으로(번호는 이어 붙임)
+    let base = 0; const items = [], wrongs = [];
+    rs.forEach(r => { const q = r.correct + r.wrong, wa = new Map((r.wrong_answers || []).map(w => [w.no, w.wrote || ""]));
+      for (let no = 1; no <= q; no++) { const ok = !wa.has(no) && !(wa.size < r.wrong && no > q - (r.wrong - wa.size));
+        const it = { no: base + no, ans: "", wrote: ok ? "" : (wa.get(no) || ""), ok }; items.push(it); if (!ok) wrongs.push({ no: it.no, ans: "", wrote: it.wrote }); }
+      base += q; });
+    const q = items.length, correct = items.filter(i => i.ok).length;
+    return { d, cls: rs[0].class_name, subject: rs.map(r => r.subject || "").filter(Boolean).join(" · "), teacher: "", name: kid.student_name,
+      q, correct, wrong: q - correct, score: q ? Math.round(correct * 100 / q) : 0, wrongs, items }; };
+  return { history, level: last.level || TV.levelOf(last.class_name),
+    levelTotal: (d) => totals.get(d) || { c: 0, q: 0 },
+    sheet: (d) => { const r = resultOf(d); return r && { d, cls: r.cls, subject: r.subject, teacher: "", q: r.q, words: r.items.map(i => ({ no: i.no, wrote: i.wrote })) }; },
+    result: resultOf,
+    fetchGrade: (d) => { const r = resultOf(d); return r ? Promise.resolve(r) : Promise.reject(new Error("no-result")); } };
+}
 TVApi.ready.then(async (mode) => {
   if (mode !== "real") return;
   let kids;
   try { kids = await TVApi.my_children(); }
   catch (e) { if (e && e.code === "auth_required") location.replace("d2_login.html"); return; }
   if (!kids.length) { location.replace("d2_link.html"); return; }
-  ME.display = kids[0].student_name;
-  renderTop();
-  const note = document.querySelector(".note"); if (note) note.firstChild.textContent = "시험지 · 점수는 아직 시안 데이터예요 ";
+  const kid = kids[0];
+  ME.display = kid.student_name;
+  const note = document.querySelector(".note");
+  try {
+    const to = new Date(), from = new Date(to.getTime() - 120 * 864e5), ymd = (t) => t.toISOString().slice(0, 10);
+    const rows = await TVApi.my_results(kid.roster_id, ymd(from), ymd(to));
+    if (!rows.length) { renderTop(); if (note) note.firstChild.textContent = "아직 받은 시험 결과가 없어요 — 아래는 시안 데이터예요 "; return; }
+    const lv = rows[rows.length - 1].level;
+    const avg = lv ? await TVApi.level_average(lv, ymd(from), ymd(to)) : [];
+    API = realStudent(kid, rows, avg);
+    ME.name = kid.student_name; ME.cls = rows[rows.length - 1].class_name;
+    TODAY = API.history[API.history.length - 1]; day = TODAY;
+    renderAll();
+    if (note) note.firstChild.textContent = "시험 결과는 매일 밤 학원 시트에서 옮겨 와요 ";
+  } catch (e) {
+    if (e && e.code === "auth_required") { location.replace("d2_login.html"); return; }
+    renderTop(); if (note) note.firstChild.textContent = "시험 결과를 불러오지 못했어요 — 아래는 시안 데이터예요 ";
+  }
 });
