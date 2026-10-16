@@ -41,12 +41,10 @@ $("kakao").onclick = async () => {
 };
 // 카카오에서 돌아왔을 때(실제 세션이 생김) — 학생 자동 로그인보다 먼저 이어 간다
 TVApi.ready.then((mode) => {
-  const err = new URLSearchParams(location.search).get("error_description") || new URLSearchParams(location.hash.slice(1)).get("error_description");
-  if (err) $("k-msg").textContent = "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.";
+  if (TVApi.authError()) $("k-msg").textContent = "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.";
   if (mode !== "real" || !TVApi.getSession()) return;
   clearTimeout(timer); $("card").classList.remove("is-auto");
   const b = $("kakao"); b.setAttribute("aria-busy", "true"); b.querySelector(".lbl").textContent = "로그인 확인 중";
-  history.replaceState(null, "", location.pathname);
   afterKakao().catch((e) => {
     b.removeAttribute("aria-busy"); b.querySelector(".lbl").textContent = "카카오 로그인";
     $("k-msg").textContent = (e && e.userMessage) || "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.";

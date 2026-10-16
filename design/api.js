@@ -113,7 +113,9 @@ window.TVApi = (function () {
       if (!mine.has(hit.id)) d.links.push({ guardian_user_id: me.user_id, roster_id: hit.id, linked_by: "auto", linked_at: new Date().toISOString() });
       d.guardians[me.user_id] = { user_id: me.user_id, display_name: me.display_name, kakao_id: me.kakao_id };
       save(d);
-      const siblings = sameGuardian.filter((r) => r.id !== hit.id && !mine.has(r.id)).map(brief);
+      // 서버와 같은 꼴: 형제는 이름 첫 글자 + ○ 로 가리고 학교 · 학년 없음
+      const mask = (n) => { const s = String(n || "").trim(); return s.length <= 1 ? "○" : s[0] + "○".repeat(s.length - 1); };
+      const siblings = sameGuardian.filter((r) => r.id !== hit.id && !mine.has(r.id)).map((r) => ({ roster_id: r.id, student_name: mask(r.student_name) }));
       return wait({ status: "linked", students: [brief(hit)], siblings });
     }
     const dup = d.requests.find((q) => q.status === "pending" && q.guardian_user_id === me.user_id &&
@@ -235,6 +237,28 @@ window.TVApi = (function () {
     },
   };
 
+  // ── 시안: 점수(시트 → Supabase test_results 와 같은 꼴) — data.js 의 가짜 학생 Mia(LIV1-4) ──
+  // my_results 줄 = { test_date:'YYYY-MM-DD', sheet_kind, class_name, level, subject, correct, wrong, check_count, score, wrong_answers:[{no, wrote}] }
+  const demoYear = 2026;
+  const demoIso = (mmdd) => `${demoYear}-${mmdd.slice(0, 2)}-${mmdd.slice(2)}`;
+  function my_results(p_roster_id, p_from, p_to) {
+    if (!window.TV) return wait([]);
+    const st = window.TV.student("Mia", "LIV1-4");
+    const rows = st.history.map((d) => { const r = st.result(d);
+      return { test_date: demoIso(d), sheet_kind: "elem", class_name: r.cls, level: st.level, subject: r.subject,
+        correct: r.correct, wrong: r.wrong, check_count: 0, score: r.score, wrong_answers: r.wrongs.map((w) => ({ no: w.no, wrote: w.wrote })) }; });
+    return wait(rows.filter((x) => (!p_from || x.test_date >= p_from) && (!p_to || x.test_date <= p_to)));
+  }
+  // level_average 줄 = { test_date, avg_rate } — 평균 %(정수)만 · 최근 2일 없음 · 10명 미만이거나 모두 같은 점수면 null
+  function level_average(p_level, p_from, p_to) {
+    if (!window.TV) return wait([]);
+    const st = window.TV.student("Mia", "LIV1-4");
+    if (String(p_level || "").toUpperCase() !== st.level) return wait([]);
+    return wait(window.TV.days.map((d) => { const t = st.levelTotal(d);
+      return { test_date: demoIso(d), avg_rate: t.q ? Math.round((t.c * 100) / t.q) : null }; })
+      .filter((x) => (!p_from || x.test_date >= p_from) && (!p_to || x.test_date <= p_to)));
+  }
+
   // ── 실제(Supabase) ───────────────────────────────────────────────────────
   const C = window.TVConfig || {};
   const sb = (window.supabase && C.SUPABASE_URL && C.SUPABASE_PUBLISHABLE_KEY)
@@ -289,9 +313,43 @@ window.TVApi = (function () {
   }
   const forcedDemo = (() => { try { return new URLSearchParams(location.search).has("demo"); } catch (e) { return false; } })();
 
-  // 모드 정하기: demo | real | auto(세션이 있으면 real). 카카오에서 돌아온 ?code= 는 supabase-js 가 여기서 세션으로 바꾼다.
+  // 카카오(→ Supabase 콜백)에서 돌아온 주소를 잡아 세션으로 바꾸고, 토큰 · 코드는 주소창 · 기록에서 지운다.
+  //  · #access_token=…&refresh_token=… (implicit 꼴) — pkce 클라이언트는 이 꼴을 스스로 잡지 않으므로 setSession 으로 직접 넣는다
+  //  · ?code=… (pkce 꼴) — supabase-js 가 만들 때 바꿔 두지만, 못 바꿨으면 한 번 더 시도
+  //  · error · error_description — authError 에 남기고 지움(화면이 안내)
+  const AUTH_KEYS = ["access_token", "refresh_token", "expires_in", "expires_at", "token_type", "provider_token", "provider_refresh_token",
+    "type", "code", "error", "error_code", "error_description", "sb"];
+  let authError = null;
+  async function captureAuthFromUrl() {
+    let hash, query;
+    try { hash = new URLSearchParams(location.hash.replace(/^#/, "")); query = new URLSearchParams(location.search); } catch (e) { return; }
+    const touched = AUTH_KEYS.some((k) => hash.has(k) || query.has(k));
+    if (!touched) return;
+    authError = hash.get("error_description") || query.get("error_description") || hash.get("error") || query.get("error") || null;
+    try {
+      if (hash.get("access_token") && hash.get("refresh_token")) {
+        const { error } = await sb.auth.setSession({ access_token: hash.get("access_token"), refresh_token: hash.get("refresh_token") });
+        if (error) authError = authError || "session_failed";
+      } else if (query.get("code")) {
+        const { data } = await sb.auth.getSession();
+        if (!(data && data.session)) {
+          const { error } = await sb.auth.exchangeCodeForSession(query.get("code"));
+          if (error) authError = authError || "session_failed";
+        }
+      }
+    } catch (e) { authError = authError || "session_failed"; }
+    finally {
+      AUTH_KEYS.forEach((k) => query.delete(k));
+      const qs = query.toString();
+      try { history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "")); } catch (e) { /* 주소 바꾸기가 막힌 환경 */ }
+    }
+  }
+
+  // 모드 정하기: demo | real | auto(세션이 있으면 real).
   const ready = (async () => {
-    if (!sb || forcedDemo || C.MODE === "demo") return "demo";
+    if (!sb) return "demo";
+    await captureAuthFromUrl();                   // 시안 강제여도 주소의 토큰은 지운다
+    if (forcedDemo || C.MODE === "demo") return "demo";
     try {
       const { data } = await sb.auth.getSession();
       realSession = toSession(data && data.session);
@@ -318,9 +376,11 @@ window.TVApi = (function () {
 
   const real = {
     getSession: () => realSession,
-    async signInWithKakao() {
+    // page = 돌아올 화면(학부모 = d2_login.html · 관리자 = d2_admin.html). Supabase Redirect URLs 에 둘 다 있어야 함
+    async signInWithKakao(page) {
       if (!sb || !(await kakaoEnabled())) throw fail("kakao_not_ready");
-      const redirectTo = new URL("d2_login.html", location.href).href.split(/[?#]/)[0];   // 배포 = location.origin + /design/d2_login.html
+      const target = page === "d2_admin.html" ? "d2_admin.html" : "d2_login.html";
+      const redirectTo = new URL(target, location.href).href.split(/[?#]/)[0];   // 배포 = location.origin + /design/<화면>
       const { error } = await sb.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo, scopes: "profile_nickname" } });
       if (error) throw fail(/provider is not enabled|unsupported provider/i.test(error.message) ? "kakao_not_ready" : "kakao_failed", error);
       return new Promise(() => {});              // 브라우저가 카카오로 넘어간다
@@ -360,12 +420,19 @@ window.TVApi = (function () {
     link_siblings: (p_roster_ids) => rpc("link_siblings", { p_roster_ids }),
     my_children: () => rpc("my_children"),
     admin_pending_requests: (p_limit = 100, p_offset = 0) => rpc("admin_pending_requests", { p_limit, p_offset }),
-    admin_resolve_request: (p_request_id, p_roster_ids, p_approve, p_note) => rpc("admin_resolve_request", { p_request_id, p_roster_ids: p_roster_ids || [], p_approve: !!p_approve, p_note: p_note || null }),
+    // p_transfer = 「이미 등록된 번호」 승인 때 기존 계정 연결을 끊고 넘김(기본 false = 둘 다 둠)
+    admin_resolve_request: (p_request_id, p_roster_ids, p_approve, p_note, p_transfer = false) => rpc("admin_resolve_request", { p_request_id, p_roster_ids: p_roster_ids || [], p_approve: !!p_approve, p_note: p_note || null, p_transfer: !!p_transfer }),
     admin_unlink: (p_guardian_user_id, p_roster_id, p_block = false, p_reason = null) => rpc("admin_unlink", { p_guardian_user_id, p_roster_id, p_block, p_reason }),
     admin_search_roster: (p_q) => rpc("admin_search_roster", { p_q: p_q || "" }),
     admin_import_roster: (p_rows, p_dry_run = false, p_force = false) => rpc("admin_import_roster", { p_rows, p_dry_run, p_force }),
     admin_linked_list: (p_q, p_only_recheck = false) => rpc("admin_linked_list", { p_q: p_q || null, p_only_recheck }),
     admin_roster_status: () => rpc("admin_roster_status"),
+    // 못 맞춘 시트 이름(후보 학생 포함) · 학생 정하기(name_map 고정)
+    admin_unmatched_names: () => rpc("admin_unmatched_names"),
+    admin_map_name: (p_sheet, p_class, p_name, p_roster_id) => rpc("admin_map_name", { p_sheet, p_class, p_name, p_roster_id }),
+    // 점수(새 마이그레이션 20261016180000_scores.sql) — 연결된 아이 것만 · 레벨 평균은 합계만(5명 미만 날은 null)
+    my_results: (p_roster_id, p_from = null, p_to = null) => rpc("my_results", { p_roster_id, p_from, p_to }),
+    level_average: (p_level, p_from = null, p_to = null) => rpc("level_average", { p_level, p_from, p_to }),
   };
 
   // 관리자 2단계 인증(TOTP) — 관리자 RPC 는 aal2 세션만 받는다
@@ -399,13 +466,16 @@ window.TVApi = (function () {
 
   // ── 화면이 부르는 함수(이름 그대로) — 모드에 따라 실제 / 시안 ───────────────
   const fake = { getSession, signInWithKakao, signOut, check_channel, openChannelAdd, link_by_contact, link_siblings, my_children,
-    admin_pending_requests, admin_resolve_request, admin_unlink, admin_search_roster, admin_import_roster, admin_linked_list, admin_roster_status };
+    admin_pending_requests, admin_resolve_request, admin_unlink, admin_search_roster, admin_import_roster, admin_linked_list, admin_roster_status,
+    my_results, level_average,
+    admin_unmatched_names: () => wait([]), admin_map_name: () => wait({ ok: true, updated: 0 }) };
   const route = (name) => async (...args) => { const m = await ready; return (m === "real" ? real : fake)[name](...args); };
   const api = {};
   Object.keys(fake).forEach((k) => { if (k !== "getSession") api[k] = route(k); });
   api.getSession = () => (isReal() ? real.getSession() : getSession());   // ready 뒤에 부른다
   // 카카오 단추: 모드와 상관없이 실제 카카오를 먼저 시도 → 준비 안 됐으면 kakao_not_ready(화면이 시안으로 넘김)
-  api.signInWithKakao = () => real.signInWithKakao();
+  api.signInWithKakao = (page) => real.signInWithKakao(page);
+  api.authError = () => authError;               // 카카오에서 돌아올 때 난 오류(ready 뒤에 읽음)
   api.signInDemo = () => signInWithKakao();
   api.signOut = async () => { await ready; if (sb) await real.signOut(); return signOut(); };
 

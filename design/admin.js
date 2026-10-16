@@ -14,7 +14,7 @@
   const busy = (b, on) => { if (on) b.setAttribute("aria-busy", "true"); else b.removeAttribute("aria-busy"); };
 
   // ── 탭(화살표 · Home · End) ─────────────────────────────────────────────
-  const TABS = ["pending", "linked", "upload"];
+  const TABS = ["pending", "linked", "upload", "names"];
   function selectTab(name, focus) {
     TABS.forEach((n) => {
       const on = n === name, t = $("t-" + n);
@@ -24,6 +24,7 @@
     const u = new URL(location.href); u.searchParams.set("tab", name); history.replaceState(null, "", u);
     if (name === "linked") loadLinked();
     if (name === "upload") loadNow();
+    if (name === "names") loadNames();
   }
   TABS.forEach((n, i) => {
     const t = $("t-" + n);
@@ -64,14 +65,25 @@
     if (P.cur) search(P.cur.child_name);
     if (userAction && matchMedia("(max-width:900px)").matches) $("d-h").focus();
   }
+  // 확인 대기 사유(서버 link_requests.reason — 관리자 화면에만 · 학부모에게는 보이지 않음)
+  const REASON = {
+    phone_not_in_roster: "명단에 없는 번호",
+    phone_already_registered: "이미 등록된 번호",
+    not_matched: "자녀 이름이 명단과 다름",
+    blocked: "관리자가 막은 연결",
+    limited: "시도 제한(같은 번호 · 이름 실패가 많음)",
+  };
+  const who = (r) => r.guardian_name || r.guardian_display_name || "보호자";
   function renderDetail() {
     const r = P.cur;
     if (!r) { $("detail").innerHTML = `<div class="empty"><b>모두 처리했어요</b>새 요청이 들어오면 왼쪽 목록에 보여요.</div>`; return; }
     $("detail").innerHTML = `
       <button class="btn quiet back" type="button" id="d-back">← 목록</button>
-      <div class="d-top"><h2 id="d-h" tabindex="-1">${esc(r.guardian_name)} 님 요청</h2><span class="mute num">${esc(when(r.created_at))} · ${esc(ago(r.created_at))}</span></div>
+      <div class="d-top"><h2 id="d-h" tabindex="-1">${esc(who(r))} 님 요청</h2><span class="mute num">${esc(when(r.created_at))} · ${esc(ago(r.created_at))}</span></div>
       <dl class="req">
-        <div><dt>보호자 이름</dt><dd>${esc(r.guardian_name)}</dd></div>
+        ${r.reason ? `<div><dt>확인 사유</dt><dd>${esc(REASON[r.reason] || r.reason)}</dd></div>` : ""}
+        ${r.reason === "phone_already_registered" ? `<div><dt>이미 등록된 번호</dt><dd>기존 계정: ${esc(r.existing_kakao_name || "–")}${r.existing_linked_at ? ` · ${esc(when(r.existing_linked_at))} 연결` : ""}</dd></div>` : ""}
+        <div><dt>보호자 이름</dt><dd>${esc(r.guardian_name || "–")}</dd></div>
         <div><dt>전화</dt><dd class="num">${esc(A.showPhone(r.phone))}</dd></div>
         <div><dt>자녀 이름</dt><dd>${esc(r.child_name)}</dd></div>
         <div><dt>카카오 이름</dt><dd>${esc(r.guardian_display_name || "–")}</dd></div>
@@ -88,6 +100,10 @@
       </div>
       <div class="cands-wrap"><table class="tbl cands rt"><thead><tr><th scope="col"><span class="vh">고르기</span></th><th scope="col">학생</th><th scope="col">학교 · 학년 · 반</th><th scope="col">보호자</th><th scope="col">전화</th><th scope="col">아카 번호</th></tr></thead><tbody id="d-body"></tbody></table></div>
       <p class="find-note" id="d-note" aria-live="polite"></p>
+      ${r.reason === "phone_already_registered" ? `<fieldset class="xfer"><legend>이 번호의 기존 계정</legend>
+          <label><input type="radio" name="xfer" value="keep" checked> 둘 다 두기</label>
+          <label><input type="radio" name="xfer" value="move"> 기존 계정 연결을 끊고 이 계정으로 넘기기</label>
+        </fieldset>` : ""}
       <div class="do">
         <button class="btn" id="d-link" type="button" disabled>골라서 연결</button>
         <button class="btn ghost" id="d-rej" type="button">거절</button>
@@ -158,9 +174,10 @@
     const r = P.cur, b = $("d-link"); if (!r || !P.picked.size || b.getAttribute("aria-busy")) return;
     busy(b, true);
     try {
-      const res = await A.admin_resolve_request(r.id, [...P.picked], true, "");
+      const move = (document.querySelector('input[name="xfer"]:checked') || {}).value === "move";
+      const res = await A.admin_resolve_request(r.id, [...P.picked], true, "", move);
       if (!res.ok) throw new Error(res.error || "fail");
-      toast(`${r.guardian_name} 님 — ${P.picked.size}명 연결했어요.`);
+      toast(`${who(r)} 님 — ${P.picked.size}명 연결했어요.${res.transferred ? " 기존 계정 연결은 끊었어요." : ""}`);
       await loadPending(); refreshCounts();
     } catch (e) { busy(b, false); $("d-note").textContent = e.message === "already_decided" ? "다른 직원이 이미 처리한 요청이에요. 목록을 새로 불러왔어요." : "연결하지 못했어요. 다시 눌러 주세요."; if (e.message === "already_decided") loadPending(); }
   }
@@ -172,9 +189,41 @@
     try {
       const res = await A.admin_resolve_request(r.id, [], false, memo ? `${why} — ${memo}` : why);
       if (!res.ok) throw new Error(res.error || "fail");
-      toast(`${r.guardian_name} 님 요청을 거절했어요 (${why}).`);
+      toast(`${who(r)} 님 요청을 거절했어요 (${why}).`);
       await loadPending();
     } catch (e) { busy(b, false); $("d-note").textContent = "거절하지 못했어요. 다시 눌러 주세요."; }
+  }
+
+  // ── ④ 못 맞춘 이름 — 같은 반 후보(가까운 까닭 순)에서 골라 name_map 에 고정(다음 날 같은 원문이면 자동) ──
+  const WHY = { ko: "한글 이름 같음", en: "영문 이름 같음", hint: "「명단:」 메모와 같음", edit1: "영문 한 글자 다름", class: "같은 반" };
+  async function loadNames() {
+    let rows = [];
+    try { rows = await A.admin_unmatched_names(); } catch (e) { $("n-sum").textContent = "불러오지 못했어요. 다시 눌러 주세요."; return; }
+    $("c-names").textContent = rows.length;
+    $("n-sum").textContent = rows.length ? `${rows.length}개 · 고르면 그 반 · 그 이름은 다음부터 자동` : "";
+    $("n-empty").hidden = !!rows.length; $("n-empty").textContent = "못 맞춘 이름이 없어요.";
+    $("n-body").innerHTML = rows.map((r, i) => `<tr data-i="${i}">
+      <td>${esc(r.class_name)}</td>
+      <td class="who"><b>${esc(r.sheet_name)}</b>${r.low_confidence ? ' <span class="pill off">판독 불확실</span>' : ""}</td>
+      <td class="num">${r.rows_count}</td>
+      <td class="num">${esc(String(r.last_date).slice(5, 10))}</td>
+      <td><select aria-label="${esc(r.sheet_name)} 학생 고르기"><option value="">고르기</option>${(r.candidates || []).map((c) =>
+        `<option value="${esc(c.roster_id)}">${esc(c.student_name)} (${esc(c.english_name || "–")}) · ${esc((c.class_names || []).join(", "))} · ${esc(WHY[c.why] || c.why)}</option>`).join("")}</select></td>
+      <td><button class="btn" type="button" disabled>정하기</button></td></tr>`).join("");
+    $("n-body").querySelectorAll("tr").forEach((tr) => {
+      const r = rows[+tr.dataset.i], sel = tr.querySelector("select"), b = tr.querySelector("button");
+      sel.onchange = () => { b.disabled = !sel.value; };
+      b.onclick = async () => {
+        if (!sel.value || b.getAttribute("aria-busy")) return;
+        busy(b, true);
+        try {
+          const res = await A.admin_map_name(r.sheet_kind, r.class_name, r.sheet_name, sel.value);
+          if (!res.ok) throw new Error(res.error || "fail");
+          toast(`${r.sheet_name} → ${sel.options[sel.selectedIndex].text.split(" (")[0]} (${res.updated}줄)`);
+          loadNames();
+        } catch (e) { busy(b, false); $("n-sum").textContent = "정하지 못했어요. 다시 눌러 주세요."; }
+      };
+    });
   }
 
   // ── ② 연결된 학부모 ─────────────────────────────────────────────────────
@@ -395,11 +444,24 @@
       } catch (e) { gateMsg("2단계 확인을 시작하지 못했어요", (e && e.userMessage) || "잠시 뒤 다시 해 주세요.", { href: "d2_admin.html", label: "다시 하기" }); resolve(false); }
     });
   }
+  // 관리자 카카오 로그인 — 돌아오는 곳 = 이 화면(d2_admin.html)
+  async function kakaoAdminLogin(btn) {
+    if (btn.getAttribute("aria-busy")) return;
+    busy(btn, true); btn.textContent = "카카오로 이동 중";
+    try { await A.signInWithKakao("d2_admin.html"); }
+    catch (e) { busy(btn, false); btn.textContent = "카카오로 관리자 로그인"; toast((e && e.userMessage) || "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요."); }
+  }
+  function loginGate(text) {
+    gateMsg("로그인이 필요해요", text);
+    G().insertAdjacentHTML("beforeend", `<div class="row"><button class="btn" id="g-kakao" type="button">카카오로 관리자 로그인</button></div>`);
+    $("g-kakao").onclick = () => kakaoAdminLogin($("g-kakao"));
+    $("g-kakao").focus();
+  }
   async function gate() {
     document.querySelectorAll(".proto").forEach((x) => { x.style.display = "none"; });
     document.querySelector(".queue-h span").textContent = "먼저 들어온 순";
     const me = A.getSession();
-    if (!me) { gateMsg("로그인이 필요해요", "카카오로 로그인한 관리자만 쓸 수 있어요.", { href: "d2_login.html", label: "로그인 화면으로" }); return false; }
+    if (!me) { loginGate(A.authError() ? "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요." : "카카오로 로그인한 관리자만 쓸 수 있어요."); return false; }
     document.querySelector(".bar .nm").textContent = `본원 · ${me.display_name}`;
     const out = document.querySelector(".bar .me a");
     out.onclick = async (e) => { e.preventDefault(); try { await A.signOut(); } finally { location.href = "d2_login.html"; } };
@@ -408,10 +470,21 @@
       const code = e && e.code;
       if (code === "mfa_required") return mfaGate();
       if (code === "forbidden" || code === "kakao_required") { gateMsg("관리자만 볼 수 있어요", "이 카카오 계정은 관리자로 등록되어 있지 않아요. 본원에 관리자 등록을 요청해 주세요."); return false; }
-      if (code === "auth_required") { gateMsg("로그인이 필요해요", "로그인이 풀렸어요. 다시 로그인해 주세요.", { href: "d2_login.html", label: "로그인 화면으로" }); return false; }
+      if (code === "auth_required") { loginGate("로그인이 풀렸어요. 다시 로그인해 주세요."); return false; }
       gateMsg("불러오지 못했어요", (e && e.userMessage) || "잠시 뒤 다시 해 주세요.", { href: "d2_admin.html", label: "다시 하기" });
       return false;
     }
   }
-  A.ready.then(async (mode) => { if (mode === "real" && !(await gate())) return; start(); });
+  A.ready.then(async (mode) => {
+    if (mode === "real") { if (!(await gate())) return; }
+    else if (!qs.has("demo")) {
+      // 시안으로 열린 상태(로그인 안 함) — 실제 관리자는 여기서 카카오로 들어온다
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "btn ghost sm"; b.textContent = "카카오로 관리자 로그인";
+      b.onclick = () => kakaoAdminLogin(b);
+      document.querySelector(".bar .me").prepend(b);
+      if (A.authError()) toast("카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.");
+    }
+    start();
+  });
 })();
