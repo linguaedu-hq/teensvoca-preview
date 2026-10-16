@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>확인 관리 | Lingua Teens Voca 본원</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+/* 본원 직원용 확인 관리 — 같은 색(크림 · 갈색 · 파란 잉크)이되 장식은 줄이고 빨리 처리하는 데 맞춘다. 빨강은 채점 전용이라 쓰지 않는다. */
+:root{--y:#fcd377;--y2:#edb033;--g-ink:#4d7a12;--b-ink:#0f6f90;--brown:#673a1b;--brown-dk:#4a2810;--ink:#221815;--warn:#8f4307;--err:#9e0f10;
+  --ground:#fff8ea;--panel:#fffdf8;--line:#ecdcbc;--line-2:#f3e8d2;--hover:#fdf3dc;--sel:#fcd37740;--mute:#6e5f55;--field:#e0cfae;
+  --ease-out:cubic-bezier(.23,1,.32,1);--shadow:0 1px 0 #67391b12,0 8px 20px -14px #67391b55}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;background:var(--ground);color:var(--ink);font:15px/1.5 "Gowun Dodum",system-ui,sans-serif;word-break:keep-all;overflow-wrap:anywhere;caret-color:var(--b-ink)}
+::selection{background:var(--y);color:var(--ink)}
+:focus-visible{outline:3px solid var(--b-ink);outline-offset:2px;border-radius:6px}
+button,input,select{font:inherit;color:inherit}
+[hidden]{display:none!important}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.num{font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
+
+/* 머리 막대 */
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:14px;min-height:56px;padding:0 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar img{display:block;width:104px;height:auto}
+.bar .where{font-family:Jua;font-size:17px;color:var(--brown);padding-left:14px;border-left:1px solid var(--line)}
+.bar .me{margin-left:auto;display:flex;align-items:center;gap:6px;color:var(--mute);font-size:14px}
+.bar .me a{display:inline-flex;align-items:center;min-height:44px;padding:0 8px;color:var(--mute);text-decoration:underline;text-underline-offset:3px}
+.wrap{max-width:1240px;margin:0 auto;padding:18px 20px 64px}
+
+/* 탭 */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 16px;border:0;background:none;color:var(--mute);font-family:Jua;font-size:17px;white-space:nowrap;cursor:pointer;transition:color .15s ease}
+.tab::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--brown);transform:scaleX(0);transition:transform .2s var(--ease-out)}
+.tab[aria-selected="true"]{color:var(--ink)}
+.tab[aria-selected="true"]::after{transform:scaleX(1)}
+@media (hover:hover) and (pointer:fine){.tab:hover{color:var(--ink)}}
+.cnt{min-width:24px;padding:1px 8px;border-radius:999px;background:var(--line-2);color:var(--brown);font-family:"Gowun Dodum";font-size:13px;text-align:center}
+.tab[aria-selected="true"] .cnt{background:var(--brown);color:#fff}
+.panel{padding-top:18px}
+.panel:focus-visible{outline:none}
+
+/* 공통 덩어리 */
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+h2{font-family:Jua;font-weight:400;font-size:20px;line-height:1.3;margin:0}
+h3{font-family:Jua;font-weight:400;font-size:16px;margin:0 0 8px;color:var(--brown)}
+.mute{color:var(--mute)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:0;border-radius:10px;cursor:pointer;font-family:Jua;font-size:16px;white-space:nowrap;
+  background:var(--brown);color:#fff;box-shadow:0 3px 0 var(--brown-dk);transition:transform .12s var(--ease-out),box-shadow .12s var(--ease-out),background-color .15s ease}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--brown-dk)}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none;box-shadow:0 3px 0 var(--brown-dk)}
+.btn[aria-busy="true"]{cursor:progress;opacity:.75}
+.btn.ghost{background:#fff;color:var(--brown);box-shadow:inset 0 0 0 1.5px var(--brown)}
+.btn.ghost:active{box-shadow:inset 0 0 0 1.5px var(--brown)}
+.btn.quiet{background:none;color:var(--mute);box-shadow:none;text-decoration:underline;text-underline-offset:3px;font-family:"Gowun Dodum";font-size:14px;padding:0 8px}
+.btn.cut{background:#fff;color:var(--warn);box-shadow:inset 0 0 0 1.5px #d9b48f}
+.btn.cut.sure{background:var(--warn);color:#fff;box-shadow:0 3px 0 #5e2b04}
+.btn.sm{min-height:36px;padding:0 12px;font-size:14px}
+input[type=search],input[type=text],select{min-height:44px;padding:8px 12px;border:1.5px solid var(--field);border-radius:10px;background:#fff;outline:none;transition:border-color .15s}
+input[type=search]:focus,input[type=text]:focus,select:focus{border-color:var(--b-ink)}
+input[type=search]::placeholder,input[type=text]::placeholder{color:#7d6c60}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:0;accent-color:var(--brown)}
+.err{color:var(--err)}
+
+/* 표 */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{position:sticky;top:0;background:var(--panel);text-align:left;font-weight:400;font-size:13px;color:var(--mute);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+.tbl tbody tr{transition:background-color .12s ease}
+@media (hover:hover) and (pointer:fine){.tbl tbody tr:hover{background:var(--hover)}}
+.tbl .who b{display:block;font-weight:400;font-family:Jua;font-size:16px}
+.tbl .who small{display:block;color:var(--mute);font-size:13px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12.5px;background:var(--line-2);color:var(--brown);white-space:nowrap}
+.pill.admin{background:#0f6f9018;color:var(--b-ink)}
+.pill.off{background:#8f430716;color:var(--warn)}
+
+/* ① 확인 대기 : 목록 | 처리 칸 */
+.md{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:18px;align-items:start}
+.queue{overflow:hidden}
+.queue-h{display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--mute)}
+.queue ul{list-style:none;margin:0;padding:6px}
+.qi{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;padding:11px 12px;border:0;border-radius:8px;background:none;text-align:left;cursor:pointer;transition:background-color .12s ease}
+@media (hover:hover) and (pointer:fine){.qi:hover{background:var(--hover)}}
+.qi[aria-current="true"]{background:var(--sel);box-shadow:inset 0 0 0 1.5px var(--brown)}
+.qi b{font-weight:400;font-family:Jua;font-size:16px}
+.qi .t{font-size:13px;color:var(--mute);text-align:right}
+.qi .p{grid-column:1/-1;font-size:13.5px;color:var(--mute)}
+.empty{padding:28px 18px;text-align:center;color:var(--mute);line-height:1.7}
+.empty b{display:block;font-family:Jua;font-weight:400;font-size:17px;color:var(--ink)}
+
+.detail{padding:18px 20px 20px}
+.d-top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:12px}
+.back{display:none}
+.req{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;margin:0 0 18px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--line)}
+.req div{padding:9px 12px;background:#fff}
+.req dt{font-size:12.5px;color:var(--mute)}
+.req dd{margin:2px 0 0;font-family:Jua;font-size:17px}
+.find{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.find input{flex:1 1 220px;min-width:0}
+.quick{display:flex;gap:4px;flex-wrap:wrap}
+.chip{min-height:36px;padding:0 12px;border:1.5px solid var(--field);border-radius:999px;background:#fff;color:var(--ink);font-size:13.5px;cursor:pointer;transition:border-color .12s ease,background-color .12s ease}
+.chip[aria-pressed="true"]{border-color:var(--brown);background:var(--sel)}
+.cands-wrap{border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:340px;background:#fff}
+.cands td:first-child,.cands th:first-child{width:44px;text-align:center}
+.cands tbody tr{cursor:pointer}
+.cands tr.picked{background:var(--sel)}
+.cands tr.off{cursor:default;color:var(--mute)}
+.m-ok{background:linear-gradient(transparent 60%,#fcd377aa 60%);padding:0 1px}
+.m-diff{color:var(--warn)}
+.m-diff::after{content:"다름";margin-left:6px;padding:0 5px;border:1px solid #d9b48f;border-radius:4px;font-size:11.5px;vertical-align:1px}
+.find-note{margin:8px 0 0;font-size:13.5px;color:var(--mute);min-height:1.4em}
+.do{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+.do .hint{font-size:13.5px;color:var(--mute);margin-left:auto}
+.rej{margin-top:12px;padding:14px;border-radius:10px;background:#8f43070d;border:1px solid #e7cdb0}
+.rej fieldset{border:0;margin:0 0 10px;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px}
+.rej legend{padding:0;margin-bottom:6px;font-family:Jua;color:var(--warn)}
+.rej label{display:inline-flex;align-items:center;gap:6px;min-height:36px;cursor:pointer}
+.rej input[type=text]{width:100%;margin-bottom:10px}
+
+/* ② 연결된 학부모 */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.tools input{flex:0 1 360px;min-width:0}
+.tools .mute{font-size:13.5px}
+.linked-wrap{overflow:hidden}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;color:var(--warn)}
+
+/* ③ 명단 올리기 */
+.now{display:flex;flex-wrap:wrap;gap:6px 28px;margin:0 0 14px;padding:12px 16px}
+.now div{display:flex;gap:8px;align-items:baseline}
+.now dt{font-size:13px;color:var(--mute)}
+.now dd{margin:0;font-family:Jua;font-size:16px}
+.drop{display:grid;place-items:center;gap:6px;min-height:170px;padding:24px;border:2px dashed #d3bd97;border-radius:12px;background:#fffdf8;text-align:center;cursor:pointer;transition:background-color .15s ease,border-color .15s ease}
+.drop b{font-family:Jua;font-weight:400;font-size:18px}
+.drop small{color:var(--mute);font-size:13.5px}
+.drop.over{border-color:var(--b-ink);background:#0f6f900d}
+.drop svg{width:40px;height:40px}
+.drop svg path{fill:none;stroke:var(--brown);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pv{margin-top:16px;padding:16px 18px}
+.pv-h{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin-bottom:10px}
+.map{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;padding:0;list-style:none;font-size:13px}
+.map li{padding:3px 9px;border-radius:6px;background:var(--line-2)}
+.map li.miss{background:#9e0f1012;color:var(--err)}
+.pv-wrap{max-height:360px;overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+.pv-tbl td,.pv-tbl th{white-space:nowrap}
+.pv-tbl tr.bad td{background:#8f43070f}
+.pv-tbl .st{color:var(--warn);font-size:13px}
+.pv-tbl td:first-child{min-width:64px}
+.warn{display:flex;gap:10px;align-items:flex-start;margin:12px 0 0;padding:12px 14px;border-radius:10px;background:#8f43070d;border:1px solid #e7cdb0;color:var(--ink);font-size:14.5px}
+.warn label{display:flex;gap:8px;align-items:center;margin-top:6px;cursor:pointer}
+.result{margin-top:16px;padding:16px 18px}
+.result dl{display:flex;flex-wrap:wrap;gap:6px 26px;margin:10px 0 0}
+.result dl div{display:flex;gap:8px;align-items:baseline}
+.result dt{color:var(--mute);font-size:13.5px}
+.result dd{margin:0;font-family:Jua;font-size:22px}
+
+/* 알림 */
+.toast{position:fixed;left:50%;bottom:20px;z-index:9;max-width:calc(100% - 32px);padding:12px 18px;border-radius:10px;background:var(--ink);color:#fff;font-size:14.5px;box-shadow:0 10px 24px -10px #221815aa;
+  transform:translate(-50%,20px);opacity:0;pointer-events:none;transition:transform .22s var(--ease-out),opacity .22s var(--ease-out)}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.skel{height:14px;margin:12px 14px;border-radius:6px;background:linear-gradient(90deg,var(--line-2),#fffaf0,var(--line-2));background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.proto{margin-top:40px;padding:10px 12px;border:1.5px dashed #cdbba0;border-radius:10px;font-size:13px;color:var(--mute)}
+.proto button,.proto a{min-height:36px;padding:0 6px;border:0;background:none;color:var(--b-ink);font-size:13px;text-decoration:underline;cursor:pointer}
+.is-shot .proto{display:none}
+
+@media (max-width:900px){
+  .md{grid-template-columns:1fr}
+  .md.open .queue{display:none}
+  .md:not(.open) .detail-box{display:none}
+  .back{display:inline-flex;margin:-6px 0 6px -8px}
+  .req{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .req div:last-child{grid-column:1/-1}
+}
+@media (max-width:700px){
+  .bar{padding:0 12px;gap:10px}.bar .where{padding-left:10px;font-size:16px}.bar .me .nm{display:none}
+  .wrap{padding:12px 12px 48px}
+  .tab{padding:0 12px;font-size:16px}
+  .detail{padding:14px 14px 16px}
+  /* 표 → 줄마다 한 덩어리 */
+  .rt thead{display:none}
+  .rt tbody tr{display:flex;flex-wrap:wrap;align-items:center;gap:3px 14px;padding:12px 14px;border-bottom:1px solid var(--line-2)}
+  .rt td{order:2;padding:0;border:0;font-size:14px}
+  .rt td[data-l]::before{content:attr(data-l) " ";color:var(--mute);font-size:12.5px}
+  .rt td.who{order:0;flex:1 1 55%;font-size:15px}
+  .rt td.c-act{order:1;margin-left:auto}
+  .cands.rt tbody tr{display:grid;grid-template-columns:32px 1fr;gap:3px 10px;align-items:start}
+  .cands.rt td{grid-column:2}
+  .cands.rt td:first-child{grid-column:1;grid-row:1/span 5;width:auto;padding-top:3px}
+  .cands-wrap{max-height:none}
+  .do .hint{margin-left:0;width:100%}
+  .do .btn{flex:1 1 auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.skel{animation:none}}
+</style></head><body>
+<header class="bar">
+  <img src="assets/lingua_teens_logo.svg?v=2" alt="Lingua Teens" width="104" height="29">
+  <span class="where">확인 관리</span>
+  <span class="me"><span class="nm">본원 · 직원01</span><a href="d2_login.html">나가기</a></span>
+</header>
+<div class="wrap">
+  <div class="tabs" role="tablist" aria-label="확인 관리">
+    <button class="tab" role="tab" id="t-pending" aria-controls="p-pending" aria-selected="true">확인 대기 <span class="cnt num" id="c-pending">–</span></button>
+    <button class="tab" role="tab" id="t-linked" aria-controls="p-linked" aria-selected="false" tabindex="-1">연결된 학부모 <span class="cnt num" id="c-linked">–</span></button>
+    <button class="tab" role="tab" id="t-upload" aria-controls="p-upload" aria-selected="false" tabindex="-1">명단 올리기</button>
+  </div>
+
+  <!-- ① 확인 대기 -->
+  <section class="panel" role="tabpanel" id="p-pending" aria-labelledby="t-pending" tabindex="0">
+    <div class="md" id="md">
+      <div class="box queue">
+        <div class="queue-h"><span>새로 들어온 순</span><span id="q-sum" class="num"></span></div>
+        <ul id="queue" aria-label="확인 대기 목록"><li><div class="skel"></div><div class="skel"></div><div class="skel"></div></li></ul>
+      </div>
+      <div class="box detail-box"><div class="detail" id="detail"></div></div>
+    </div>
+  </section>
+
+  <!-- ② 연결된 학부모 -->
+  <section class="panel" role="tabpanel" id="p-linked" aria-labelledby="t-linked" tabindex="0" hidden>
+    <div class="tools">
+      <input type="search" id="l-q" placeholder="학생 · 보호자 · 카카오 이름 · 전화 뒷자리" aria-label="연결된 학부모 찾기">
+      <span class="mute num" id="l-sum"></span>
+    </div>
+    <div class="box linked-wrap">
+      <table class="tbl rt" id="l-tbl">
+        <thead><tr><th scope="col">학생</th><th scope="col">보호자(명단)</th><th scope="col">카카오 이름</th><th scope="col">전화</th><th scope="col">연결</th><th scope="col">연결한 때</th><th scope="col"><span class="vh">끊기</span></th></tr></thead>
+        <tbody id="l-body"></tbody>
+      </table>
+      <div class="empty" id="l-empty" hidden></div>
+    </div>
+  </section>
+
+  <!-- ③ 명단 올리기 -->
+  <section class="panel" role="tabpanel" id="p-upload" aria-labelledby="t-upload" tabindex="0" hidden>
+    <dl class="box now" id="now"></dl>
+    <label class="drop" id="drop" for="file">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 25 V31 H31 V25"/><path d="M20 26 V8"/><path d="M13 15 L20 8 L27 15"/></svg>
+      <b>아카에서 내려받은 원생 명단 파일을 여기에 끌어 놓으세요</b>
+      <small>또는 눌러서 파일 고르기 · CSV · 엑셀(xlsx)</small>
+    </label>
+    <input type="file" id="file" accept=".csv,.xlsx,.xls,text/csv" hidden>
+    <p class="err" id="u-err" role="alert"></p>
+
+    <div class="box pv" id="pv" hidden>
+      <div class="pv-h"><h2>미리보기</h2><span class="mute" id="pv-file"></span></div>
+      <ul class="map" id="pv-map" aria-label="파일 칸 → 명단 칸"></ul>
+      <div class="pv-wrap"><table class="tbl pv-tbl" id="pv-tbl"></table></div>
+      <div id="pv-warn"></div>
+      <div class="do">
+        <button class="btn" id="pv-go" type="button">명단에 넣기</button>
+        <button class="btn ghost" id="pv-cancel" type="button">다시 고르기</button>
+        <span class="hint" id="pv-hint"></span>
+      </div>
+    </div>
+
+    <div class="box result" id="res" hidden aria-live="polite">
+      <h2>명단에 넣었어요</h2>
+      <dl id="res-dl"></dl>
+      <p class="mute" style="margin:10px 0 0;font-size:13.5px">빠짐 = 이번 파일에 없어 명단에서 비활성으로 바뀐 학생</p>
+    </div>
+  </section>
+
+  <aside class="proto" aria-label="시안 보기">시안:
+    <button type="button" id="p-sample">예시 명단 파일로 해 보기</button>
+    <button type="button" id="p-reset">가짜 데이터 처음으로</button>
+    <a href="d2_link.html">학부모 연결 화면</a>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="api.js"></script>
+<script src="admin.js"></script>
+</body></html>

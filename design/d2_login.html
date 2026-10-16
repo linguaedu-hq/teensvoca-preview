@@ -4,6 +4,7 @@
 <title>로그인 | Lingua Teens Voca</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="kakao.css">
 <style>
 :root{--y:#fcd377;--y2:#edb033;--red:#d71718;--red-dk:#9e0f10;--g:#89b929;--b:#158ab2;--b-ink:#0f6f90;--brown:#673a1b;--ink:#221815;
   --ground:#fff8ea;--paper:#fffdf6;--rule:#d3e4f0;--margin:#f0a3a3;--mute:#6e5f55;--field:#e6d6b8;--row:36px;--ease-out:cubic-bezier(.23,1,.32,1);--ease-io:cubic-bezier(.77,0,.175,1);--ease-pen:cubic-bezier(.65,0,.35,1)}
@@ -19,7 +20,8 @@ body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:28px 16p
 .logo{margin:0}.logo img{display:block;width:214px;height:auto;margin-left:-4px}
 .logo small{display:block;font-family:Jua;font-size:22px;line-height:1.1;color:var(--brown);margin-top:4px}
 .tag{display:inline-block;text-wrap:balance;font-family:"Nanum Pen Script";color:var(--b-ink);font-size:28px;line-height:1.1;margin:8px 0 18px;transform:rotate(-2deg)}
-h1{position:relative;display:inline-block;font-family:Jua;font-weight:400;font-size:22px;margin:0 0 6px}
+h1,h2{position:relative;display:inline-block;font-family:Jua;font-weight:400;font-size:22px;margin:0 0 6px}
+h2{font-size:19px;margin-top:6px}
 h1 svg{position:absolute;left:-4px;bottom:-7px;width:calc(100% + 8px);height:10px}
 .f{margin-top:12px}
 label{display:block;font-size:15px;color:var(--ink);margin:0 0 4px}
@@ -51,7 +53,17 @@ input[aria-invalid="true"]{border-color:var(--red)}
 .card.still .stamp path{animation:none;opacity:1;stroke-dashoffset:0}.card.still .stamp span{animation:none;clip-path:none}
 /* 자동 로그인 중 */
 .auto{display:none;margin-top:6px}
-.card.is-auto .auto{display:block}.card.is-auto .form,.card.is-auto .stamp{display:none}
+.card.is-auto .auto{display:block}.card.is-auto .form,.card.is-auto .kk,.card.is-auto .stamp{display:none}
+/* 학부모 = 카카오 로그인(주 단추) · 학생 아이디는 아래에 접어 둔다 */
+.kk .kakao{margin-top:12px}
+.kk .help{margin-top:10px}
+.kmsg:empty{display:none}
+.sid{display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:10px;padding:0 4px;border:0;background:none;color:var(--b-ink);font:inherit;font-size:15px;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+.sid svg{width:14px;height:10px;transition:transform .2s var(--ease-out)}
+.sid svg path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sid[aria-expanded="true"] svg{transform:rotate(180deg)}
+.form{margin-top:4px;padding-top:6px;border-top:2px dashed var(--field)}
+.form[hidden]{display:none}
 .auto p{margin:0;font-size:17px}
 .auto b{font-family:Jua;font-weight:400}.nw{white-space:nowrap}
 .inkline{display:block;width:min(220px,100%);height:14px;margin-top:6px;overflow:visible}
@@ -66,13 +78,20 @@ input[aria-invalid="true"]{border-color:var(--red)}
   <div class="stamp" aria-hidden="true"><svg viewBox="0 0 92 80"><path pathLength="1" d="M18 22 C30 6 70 4 84 24 C96 42 78 70 48 74 C20 77 4 60 7 40 C9 28 20 16 36 12"/></svg><span>100<br>점!</span></div>
   <p class="logo"><img src="assets/lingua_teens_logo.svg?v=2" alt="Lingua Teens" width="214" height="60"><small>Voca Check</small></p>
   <span class="tag"><span class="tx">오늘 단어시험, 바로 확인해요</span> <span class="emo" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M7.6 4.6 C11.2 2.3 17.6 2.9 20.1 7.1 C22.6 11.5 20.5 18.5 15 20.5 C9.6 22.4 3.7 19.2 3.3 13.3 C3 9.1 5.1 5.7 9.2 4.3"/><path pathLength="1" d="M9 9.3 L9.1 11.1"/><path pathLength="1" d="M15 9.3 L15.1 11.1"/><path pathLength="1" d="M7.4 14.3 C9.7 18 14.7 18.1 16.9 14"/></svg></span></span>
-  <form class="form" id="f" novalidate>
-    <h1>학생 · 학부모 로그인<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6 C25 2 55 9 98 4" fill="none" stroke="#fcd377" stroke-width="5" stroke-linecap="round"/></svg></h1>
+  <section class="kk" id="kk" aria-labelledby="kk-h">
+    <h1 id="kk-h">학부모 로그인<svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path d="M2 6 C25 2 55 9 98 4" fill="none" stroke="#fcd377" stroke-width="5" stroke-linecap="round"/></svg></h1>
+    <button class="kakao" id="kakao" type="button"><svg class="sym" viewBox="0 0 18 18" aria-hidden="true"><path fill="#000" d="M9 1.6C4.6 1.6 1 4.4 1 7.85c0 2.24 1.5 4.2 3.76 5.3l-.96 3.5c-.08.3.25.53.5.36l4.18-2.77c.17.01.35.02.52.02 4.42 0 8-2.8 8-6.3S13.42 1.6 9 1.6Z"/></svg><span class="lbl">카카오 로그인</span></button>
+    <p class="help">처음 한 번만 우리 아이를 연결하면, 다음부터 바로 열려요.</p>
+    <p class="msg kmsg" id="k-msg" role="alert"></p>
+    <button class="sid" id="sid" type="button" aria-expanded="false" aria-controls="f">학생 아이디로 들어가기<svg viewBox="0 0 14 10" aria-hidden="true"><path d="M2 3 L7 7.5 L12 3"/></svg></button>
+  </section>
+  <form class="form" id="f" novalidate hidden>
+    <h2>학생 아이디</h2>
     <div class="f"><label for="id">아이디</label><input id="id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="예) 0000" aria-describedby="id-msg"><p class="msg" id="id-msg"></p></div>
     <div class="f"><label for="pw">비밀번호</label><input id="pw" type="password" autocomplete="current-password" aria-describedby="pw-msg"><p class="msg" id="pw-msg"></p></div>
     <label class="keep"><input type="checkbox" id="keep" checked> 다음부터 자동 로그인</label>
     <button class="go" type="submit">들어가기<svg viewBox="0 0 26 18" aria-hidden="true"><path d="M2 9.5 C8 8.5 15 9.5 23 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M16 3 L23.5 9 L16.5 15" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <p class="help">아이디와 비밀번호는 담임 선생님께 받아요.<br>학부모님도 같은 아이디로 들어와요.</p>
+    <p class="help">아이디와 비밀번호는 담임 선생님께 받아요.</p>
   </form>
   <div class="auto" id="auto" aria-live="polite">
     <p><b id="auto-id"></b> 계정으로 <span class="nw">자동 로그인 중</span></p><svg class="inkline" viewBox="0 0 220 14" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M3 9 C40 3 70 12 110 7 C150 2 180 11 217 6"/></svg>
@@ -80,6 +99,7 @@ input[aria-invalid="true"]{border-color:var(--red)}
   </div>
   <svg class="pencil" viewBox="0 0 128 24" aria-hidden="true"><path d="M11 4 H18.5 V20 H11 C6 20 3.5 17 3.5 12 C3.5 7 6 4 11 4 Z" fill="#f0a3a3" stroke="#221815" stroke-width="1.8" stroke-linejoin="round"/><rect x="18.5" y="3.4" width="11" height="17.2" rx="1.4" fill="#e3dccf" stroke="#221815" stroke-width="1.8"/><path d="M22.3 4.4 V19.6 M25.9 4.4 V19.6" stroke="#a89f92" stroke-width="1.1" stroke-linecap="round"/><path d="M29.5 4 H95 V20 H29.5 Z" fill="#fcd377" stroke="#221815" stroke-width="1.8" stroke-linejoin="round"/><path d="M30.4 4.9 H94.1 V8.5 H30.4 Z" fill="#fde6ae"/><path d="M30.4 15.6 H94.1 V19.1 H30.4 Z" fill="#edb033" opacity=".7"/><path d="M30.6 8.6 H93.9 M30.6 15.5 H93.9" stroke="#d9a032" stroke-width=".8" opacity=".55"/><path d="M95 4 C97.2 5.6 97.2 7.9 95.4 9.3 C97.2 10.8 97.2 13.2 95.4 14.7 C97.2 16.1 97.2 18.4 95 20 L116.2 13.4 V10.6 Z" fill="#f6dcb2" stroke="#221815" stroke-width="1.8" stroke-linejoin="round"/><path d="M116.2 10.6 L124.6 12 L116.2 13.4 Z" fill="#3b3431" stroke="#221815" stroke-width="1.3" stroke-linejoin="round"/><circle class="tip" cx="124.4" cy="12" r=".6" fill="none"/><circle class="tail" cx="4" cy="12" r=".6" fill="none"/></svg>
 </main>
+<script src="api.js"></script>
 <script>
 // 자동 로그인: 처음 한 번 아이디·비밀번호를 치면 다음부터 바로 들어간다.
 // 비밀번호는 페이지에 저장하지 않는다. 실제판은 서버가 주는 로그인 토큰(오래 가는 쿠키)으로, 시안은 아이디만 기억한다.
@@ -92,7 +112,25 @@ if (saved) {
   $("card").classList.add("is-auto"); $("auto-id").textContent = saved;
   timer = setTimeout(() => location.replace("d2_dashboard.html"), 1100);
 }
-$("other").onclick = () => { clearTimeout(timer); S.del("tv-auto"); $("card").classList.remove("is-auto"); $("id").focus(); };
+function openStudent(open){ $("f").hidden = !open; $("sid").setAttribute("aria-expanded", String(open)); }
+$("other").onclick = () => { clearTimeout(timer); S.del("tv-auto"); $("card").classList.remove("is-auto"); openStudent(true); $("id").focus(); };
+$("sid").onclick = () => { const open = $("f").hidden; openStudent(open); if (open) $("id").focus(); };
+// 카카오 로그인 → 채널 친구가 아니면 채널 화면 → 연결된 아이가 없으면 연결 화면 → 대시보드 (docs/LINKING.md 흐름)
+$("kakao").onclick = async () => {
+  const b = $("kakao"), lbl = b.querySelector(".lbl");
+  if (b.getAttribute("aria-busy") === "true") return;
+  b.setAttribute("aria-busy", "true"); lbl.textContent = "카카오로 이동 중"; $("k-msg").textContent = "";
+  try {
+    await TVApi.signInWithKakao();
+    const { relation } = await TVApi.check_channel();
+    if (relation !== "ADDED") { location.href = "d2_channel.html"; return; }
+    const kids = await TVApi.my_children();
+    location.href = kids.length ? "d2_dashboard.html" : "d2_link.html";
+  } catch (e) {
+    b.removeAttribute("aria-busy"); lbl.textContent = "카카오 로그인";
+    $("k-msg").textContent = "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.";
+  }
+};
 function check(input, msgId, text){
   const bad = !input.value.trim(); input.setAttribute("aria-invalid", String(bad)); $(msgId).textContent = bad ? text : ""; return !bad;
 }

@@ -1,0 +1,13 @@
+/* 카카오 공식 단추 — 카카오 로그인 디자인 가이드 그대로: 바탕 #FEE500 · 말풍선 기호 #000 · 글자 rgba(0,0,0,.85) · 모서리 12px.
+   기호 모양·비율은 바꾸지 않는다. 실제판에서는 카카오 개발자 센터 「리소스 다운로드」의 기호 파일로 바꿔 끼운다. */
+.kakao{position:relative;display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;padding:0 54px;border:0;border-radius:12px;
+  background:#FEE500;color:rgba(0,0,0,.85);font:600 17px/1.2 system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;letter-spacing:-.01em;
+  text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s cubic-bezier(.23,1,.32,1),filter .15s ease}
+.kakao .sym{position:absolute;left:20px;top:50%;width:20px;height:20px;margin-top:-10px}
+@media (hover:hover) and (pointer:fine){.kakao:hover{filter:brightness(.97)}}
+.kakao:active{transform:scale(.985)}
+.kakao:focus-visible{outline:3px solid #0f6f90;outline-offset:3px}
+.kakao[aria-busy="true"]{cursor:progress}
+.kakao[aria-busy="true"] .lbl::after{content:"";display:inline-block;width:1.1em;text-align:left;animation:kdots 1s steps(4,end) infinite}
+@keyframes kdots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+@media (prefers-reduced-motion:reduce){.kakao{transition:none}.kakao[aria-busy="true"] .lbl::after{animation:none;content:"..."}}

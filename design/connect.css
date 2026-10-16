@@ -1,0 +1,82 @@
+/* 채널 추가 · 우리 아이 연결 — 로그인(d2_login.html)과 같은 공책 카드 · 같은 색. 빨강은 채점 전용이라 여기서는 쓰지 않는다(오류 글만 짙은 빨강). */
+:root{--y:#fcd377;--y2:#edb033;--red-dk:#9e0f10;--g:#89b929;--g-ink:#4d7a12;--b:#158ab2;--b-ink:#0f6f90;--brown:#673a1b;--brown-dk:#4a2810;--ink:#221815;
+  --ground:#fff8ea;--paper:#fffdf6;--paper-edge:#ecdcbc;--rule:#d3e4f0;--margin:#f0a3a3;--mute:#6e5f55;--field:#e6d6b8;--row:36px;
+  --ease-out:cubic-bezier(.23,1,.32,1);--ease-pen:cubic-bezier(.65,0,.35,1)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px 56px;font:16px/1.55 "Gowun Dodum",system-ui,sans-serif;word-break:keep-all;overflow-wrap:anywhere;color:var(--ink);caret-color:var(--b-ink);
+  background:var(--ground) radial-gradient(#edb03333 1.5px,transparent 1.6px) 0 0/22px 22px}
+::selection{background:var(--y);color:var(--ink)}
+:focus-visible{outline:3px solid var(--b-ink);outline-offset:3px;border-radius:6px}
+button{font:inherit;color:inherit}
+[hidden]{display:none!important}
+
+/* 머리 : 로고 + 지금 어디까지 왔는지(카카오 로그인 → 채널 추가 → 우리 아이 연결) */
+.head{width:min(460px,100%);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.head img{display:block;width:128px;height:auto}
+.trail{display:flex;gap:4px 12px;flex-wrap:wrap;justify-content:flex-end;margin:0;padding:0;list-style:none;font-size:13px;color:var(--mute)}
+.trail li{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.trail svg{width:14px;height:12px;flex:0 0 auto}
+.trail svg path{fill:none;stroke:var(--g-ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.trail [aria-current]{color:var(--ink);font-family:Jua}
+.trail .todo{display:inline-block;flex:0 0 auto;width:8px;height:8px;margin:0 3px;border-radius:50%;border:1.6px solid #b6a38c}
+.trail [aria-current] .todo{border-color:var(--brown);background:var(--y)}
+
+/* 공책 카드 */
+.card{position:relative;width:min(460px,100%);background:var(--paper);border-radius:4px 4px 6px 6px;padding:32px 24px 30px 66px;
+  box-shadow:0 1px 0 #67391b14,0 18px 36px -12px #67391b40;
+  background-image:linear-gradient(90deg,transparent 48px,var(--margin) 48px,var(--margin) 50px,transparent 50px)}
+.card::before{content:"";position:absolute;top:-13px;left:50%;width:112px;height:26px;margin-left:-56px;background:#fcd377d0;transform:rotate(-2deg)}
+h1{position:relative;display:inline-block;font-family:Jua;font-weight:400;font-size:26px;line-height:1.25;margin:0 0 8px;text-wrap:balance}
+h1 .hl{position:absolute;left:-4px;bottom:-6px;width:calc(100% + 8px);height:10px;pointer-events:none}
+h1:focus{outline:none}
+.lead{margin:0 0 6px;font-size:17px;line-height:1.6}
+.small{margin:10px 0 0;font-size:14px;color:var(--mute);line-height:1.6}
+
+/* 넣는 칸 */
+.f{margin-top:10px}
+label{display:block;font-size:15px;margin:0 0 4px}
+input[type=text],input[type=tel]{width:100%;font:inherit;font-size:18px;min-height:52px;padding:10px 14px;border:2px solid var(--field);border-radius:12px;background:#fff;color:var(--ink);outline:none;transition:border-color .15s}
+input::placeholder{color:#7d6c60}
+input:focus{border-color:var(--b-ink)}
+input[aria-invalid="true"]{border-color:var(--red-dk)}
+.msg{min-height:1.3em;margin:4px 0 0;font-size:14px;color:var(--red-dk)}
+
+/* 단추 : 공책 화면들과 같은 각진 갈색 종이 단추 */
+.act{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin-top:16px;padding:10px 20px;border:0;border-radius:12px;cursor:pointer;
+  font-family:Jua;font-size:21px;color:#fff;background:var(--brown);box-shadow:0 4px 0 var(--brown-dk),0 12px 20px -10px #4a281099;text-decoration:none;
+  transition:transform .12s var(--ease-out),box-shadow .12s var(--ease-out),opacity .15s ease}
+.act svg{width:24px;height:16px;transition:transform .18s var(--ease-out)}
+.act svg path{fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@media (hover:hover) and (pointer:fine){.act:hover svg{transform:translateX(3px)}}
+.act:active{transform:translateY(3px) scale(.985);box-shadow:0 1px 0 var(--brown-dk)}
+.act[aria-busy="true"]{opacity:.7;cursor:progress}
+.act:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.act.alt{color:var(--brown);background:#fff;box-shadow:inset 0 0 0 2px var(--brown),0 4px 0 var(--paper-edge)}
+.act.alt:active{box-shadow:inset 0 0 0 2px var(--brown),0 1px 0 var(--paper-edge)}
+.act:focus-visible{outline:3px solid var(--b-ink);outline-offset:4px}
+.link{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;border:0;background:none;color:var(--b-ink);font-size:15px;text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+
+/* 파란 잉크 손글씨 표시(체크 · 도장) — 채점 빨강과 구별 */
+.ink path{fill:none;stroke:var(--b-ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw .5s var(--ease-pen) .1s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.pen{font-family:"Nanum Pen Script";color:var(--b-ink);line-height:1.05}
+
+/* 결과가 들어올 때 : 이미 보이는 자리에서 짧게 */
+.enter{animation:enter .24s var(--ease-out) both}
+@keyframes enter{from{opacity:0;transform:translateY(6px)}}
+
+/* 시안에서만 보이는 칸(실제판에서 지움) */
+.proto{width:min(460px,100%);margin-top:34px;padding:10px 12px;border:1.5px dashed #cdbba0;border-radius:10px;font-size:13px;color:var(--mute);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.proto a,.proto button{min-height:36px;padding:0 6px;border:0;background:none;color:var(--b-ink);font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;display:inline-flex;align-items:center}
+.is-shot .proto{display:none}
+
+@media (max-width:420px){
+  body{padding:14px 12px 44px}
+  .card{padding:28px 16px 26px 54px;background-image:linear-gradient(90deg,transparent 38px,var(--margin) 38px,var(--margin) 40px,transparent 40px)}
+  .head{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:20px}
+  .head img{width:112px}
+  .trail{justify-content:flex-start}
+  h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){.ink path{animation:none;stroke-dashoffset:0}.enter{animation:none}.act,.act svg{transition:none}}
