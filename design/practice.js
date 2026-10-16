@@ -1,8 +1,12 @@
 // 단어 퀴즈 · 복습 · 발음 듣기 공통(시안). data.js 다음에 불러온다.
 // 시안은 학생 한 명(Mia)과 가짜 데이터. 실제판은 서버가 로그인한 학생 것만 내려준다.
 window.TVP = (function () {
-  const ME = { name: "Mia", cls: "LIV1-4" };
-  const API = TV.student(ME.name, ME.cls);
+  // 대시보드에서 고른 아이(형제) — tv-child-me = { roster_id, name, cls, display }. 없으면 시안 학생 Mia.
+  // 기록 열쇠(채점 · 복습 · 퀴즈)는 아이마다 따로. 시안 데이터에 없는 아이(실제 학생)는 단어 묶음만 Mia 것을 빌려 쓴다.
+  const picked = (() => { try { const v = JSON.parse(localStorage.getItem("tv-child-me")); return v && v.name && v.cls ? v : null; } catch (e) { return null; } })();
+  const ME = picked ? { name: picked.name, cls: picked.cls, display: picked.display || picked.name } : { name: "Mia", cls: "LIV1-4" };
+  const own = TV.student(ME.name, ME.cls);
+  const API = own.history.length ? own : TV.student("Mia", "LIV1-4");
   const TODAY = API.history[API.history.length - 1];
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },

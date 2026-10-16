@@ -30,6 +30,23 @@ button{font:inherit;color:inherit}
 .acct .nm{font-family:Jua;font-size:16px;padding:0 6px}
 .out{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border:0;border-radius:8px;background:transparent;color:var(--mute);font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .out:hover{color:var(--ink)}
+/* 형제 고르기(자녀 2명 이상) — 이름 단추 → 펼침 목록. 손글씨 점선 · 크림 종이 결 */
+.acct{position:relative;min-width:0}
+.kid{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:min(44vw,210px);min-height:44px;padding:0 10px 0 12px;border:1.5px dashed #c58f2a;border-radius:12px;background:var(--paper);color:var(--ink);font-family:Jua;font-size:17px;cursor:pointer;transition:background .15s}
+.kid .kn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kid svg{flex:none;width:12px;height:9px;transition:transform .2s var(--ease-out)}
+.kid svg path{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kid[aria-expanded="true"]{background:#fcd37740}.kid[aria-expanded="true"] svg{transform:rotate(180deg)}
+@media (hover:hover) and (pointer:fine){.kid:hover{background:#fcd37733}}
+.kids{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:max-content;min-width:200px;max-width:calc(100vw - 32px);margin:0;padding:6px;list-style:none;background:var(--paper);border:1px solid var(--paper-edge);border-radius:12px;box-shadow:0 1px 0 #67391b14,0 14px 28px -12px #67391b55}
+.kids[hidden],.kid[hidden]{display:none}
+.kids button{display:flex;align-items:baseline;justify-content:space-between;gap:14px;width:100%;min-height:48px;padding:6px 12px;border:0;border-radius:8px;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.kids button b{font-family:Jua;font-weight:400;font-size:18px}
+.kids button small{font-size:13px;color:var(--mute);white-space:nowrap}
+.kids button[aria-selected="true"]{background:#fcd37766}
+.kids button:focus-visible{outline:3px solid var(--b-ink);outline-offset:-3px}
+@media (hover:hover) and (pointer:fine){.kids button:hover{background:#fcd37733}}
+@media (prefers-reduced-motion:reduce){.kid,.kid svg{transition:none}}
 h1{font-family:Jua;font-weight:400;font-size:clamp(28px,6vw,36px);line-height:1.15;margin:14px 0 4px;letter-spacing:-.01em}
 h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%);padding:0 2px}
 .sub{color:var(--mute);margin:0 0 10px;font-size:16px}
@@ -264,7 +281,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 <div class="wrap">
 <header class="top">
   <div class="brand"><img src="assets/lingua_teens_logo.svg?v=2" alt="Lingua Teens" width="150" height="42"><small>단어시험 채점</small></div>
-  <div class="acct"><span class="nm" id="who"></span><button class="out" id="logout" type="button">로그아웃</button></div>
+  <div class="acct"><span class="nm" id="who"></span><button class="kid" id="kid" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="kids" hidden><span class="kn" id="kid-n"></span><svg viewBox="0 0 12 9" aria-hidden="true"><path d="M2 2.5 L6 6.5 L10 2.5"/></svg></button><ul class="kids" id="kids" role="listbox" aria-label="볼 아이 고르기" hidden></ul><button class="out" id="logout" type="button">로그아웃</button></div>
 </header>
 <main>
 <h1>안녕, <em id="nm"></em>!</h1>
@@ -287,7 +304,7 @@ h1 em{font-style:normal;background:linear-gradient(transparent 58%,var(--y) 58%)
 <p class="note">시안용 가짜 데이터(학생 한 명 Mia) <button type="button" id="reset">채점 기록 지우고 다시 보기</button><!--REC-NOTE--><!--/REC-NOTE--></p>
 </div>
 <script src="data.js?v=6"></script>
-<script src="practice.js?v=1"></script>
+<script src="practice.js?v=2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok" crossorigin="anonymous"></script>
 <script src="config.js"></script>
 <script src="api.js"></script>

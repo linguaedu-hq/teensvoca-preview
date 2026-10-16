@@ -239,28 +239,95 @@ function realStudent(kid, rows, avgRows){
     result: resultOf,
     fetchGrade: (d) => { const r = resultOf(d); return r ? Promise.resolve(r) : Promise.reject(new Error("no-result")); } };
 }
+// ── 자녀 고르기(형제) ────────────────────────────────────────────────────
+// 실제 = my_children() · 시안 = 카카오 시안 세션이 있을 때 가짜 my_children()(학생 아이디 로그인은 Mia 한 명)
+// 고른 아이 = ?child=<roster_id> → localStorage(tv-child) → 첫 아이. 퀴즈 · 복습은 tv-child-me(이름 · 반)로 같은 아이를 본다.
+const CHILD_KEY = "tv-child", CHILD_ME_KEY = "tv-child-me";
+let kidMe = {};                                    // roster_id → { name, cls, display } (고르기 전에 퀴즈 · 복습 열쇠를 맞춰 두려고)
+const DEMO_PICKS = [{ name: "Mia", cls: "LIV1-4" }, { name: "Theo", cls: "LIV2P-1" }, { name: "Leo", cls: "LIV1-4" }, { name: "Luna", cls: "LIV2P-1" }];
+function pickKid(kids){
+  const want = new URLSearchParams(location.search).get("child") || store.get(CHILD_KEY);
+  return kids.find(k => k.roster_id === want) || kids[0];
+}
+function rememberKid(kid, me){
+  store.set(CHILD_KEY, kid.roster_id);
+  store.set(CHILD_ME_KEY, JSON.stringify({ roster_id: kid.roster_id, name: me.name, cls: me.cls, display: kid.student_name }));
+  const u = new URL(location.href); u.searchParams.set("child", kid.roster_id); history.replaceState(history.state, "", u);
+}
+function renderKids(kids, cur, labelOf){
+  if (kids.length < 2) { $("kid").hidden = true; $("who").hidden = false; $("kids").hidden = true; return; }
+  $("who").hidden = true; $("kid").hidden = false; $("kid-n").textContent = cur.student_name;
+  $("kid").setAttribute("aria-label", `${cur.student_name} — 다른 아이 보기`);
+  $("kids").innerHTML = kids.map(k => `<li><button type="button" role="option" data-id="${esc(k.roster_id)}" aria-selected="${k.roster_id === cur.roster_id}"><b>${esc(k.student_name)}</b><small>${esc(labelOf(k))}</small></button></li>`).join("");
+}
+function openKids(open, focusSel){
+  $("kids").hidden = !open; $("kid").setAttribute("aria-expanded", String(open));
+  if (open && focusSel) ($("kids").querySelector('[aria-selected="true"]') || $("kids").querySelector("button")).focus();
+}
+$("kid").onclick = () => openKids($("kids").hidden, true);
+$("kids").onclick = e => {
+  const b = e.target.closest("button[data-id]"); if (!b) return;
+  openKids(false); $("kid").focus();
+  if (b.getAttribute("aria-selected") === "true") return;
+  // 퀴즈 · 복습 기록(TVP)도 그 아이 것으로 — 고른 아이로 다시 연다
+  store.set(CHILD_KEY, b.dataset.id);
+  if (kidMe[b.dataset.id]) store.set(CHILD_ME_KEY, JSON.stringify(Object.assign({ roster_id: b.dataset.id }, kidMe[b.dataset.id]))); else store.del(CHILD_ME_KEY);
+  try { sessionStorage.removeItem("tv-kid-sync"); } catch (err) { /* 저장 막힘 — 한 번 더 열릴 수 있음 */ }
+  const u = new URL(location.href); u.searchParams.set("child", b.dataset.id); location.replace(u);
+};
+$("kids").onkeydown = e => {
+  const bs = [...$("kids").querySelectorAll("button")], i = bs.indexOf(document.activeElement);
+  const k = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: bs.length - 1 }[e.key];
+  if (k !== undefined) { e.preventDefault(); bs[(k + bs.length) % bs.length].focus(); }
+  if (e.key === "Escape") { openKids(false); $("kid").focus(); }
+};
+document.addEventListener("click", e => { if (!$("kids").hidden && !e.target.closest(".acct")) openKids(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("kids").hidden) { openKids(false); $("kid").focus(); } });
+
+function showDemoKid(kid, idx){
+  const p = DEMO_PICKS[idx % DEMO_PICKS.length];
+  ME.name = p.name; ME.cls = p.cls; ME.display = kid.student_name;
+  API = TV.student(p.name, p.cls); TODAY = API.history[API.history.length - 1]; day = TODAY;
+  return p;
+}
+async function showRealKid(kid){
+  ME.display = kid.student_name;
+  const note = document.querySelector(".note");
+  const to = new Date(), from = new Date(to.getTime() - 120 * 864e5), ymd = (t) => t.toISOString().slice(0, 10);
+  const rows = await TVApi.my_results(kid.roster_id, ymd(from), ymd(to));
+  if (!rows.length) { if (note) note.firstChild.textContent = "아직 받은 시험 결과가 없어요 — 아래는 시안 데이터예요 "; return { name: kid.student_name, cls: kid.class_name || "" }; }
+  const lv = rows[rows.length - 1].level;
+  const avg = lv ? await TVApi.level_average(lv, ymd(from), ymd(to)) : [];
+  API = realStudent(kid, rows, avg);
+  ME.name = kid.student_name; ME.cls = rows[rows.length - 1].class_name;
+  TODAY = API.history[API.history.length - 1]; day = TODAY;
+  if (note) note.firstChild.textContent = "시험 결과는 매일 밤 학원 시트에서 옮겨 와요 ";
+  return { name: ME.name, cls: ME.cls };
+}
 TVApi.ready.then(async (mode) => {
-  if (mode !== "real") return;
+  const real = mode === "real";
+  if (!real && !TVApi.getSession()) { store.del(CHILD_ME_KEY); return; }   // 학생 아이디 시안: Mia 한 명 그대로
   let kids;
   try { kids = await TVApi.my_children(); }
   catch (e) { if (e && e.code === "auth_required") location.replace("d2_login.html"); return; }
-  if (!kids.length) { location.replace("d2_link.html"); return; }
-  const kid = kids[0];
-  ME.display = kid.student_name;
-  const note = document.querySelector(".note");
+  if (!kids.length) { if (real) location.replace("d2_link.html"); return; }
+  const kid = pickKid(kids), idx = kids.indexOf(kid);
+  kids.forEach((k, i) => { const p = DEMO_PICKS[i % DEMO_PICKS.length];
+    kidMe[k.roster_id] = real ? { name: k.student_name, cls: k.class_name || "", display: k.student_name } : { name: p.name, cls: p.cls, display: k.student_name }; });
+  const labelOf = (k) => real ? [k.class_name, k.grade].filter(Boolean).join(" · ") : DEMO_PICKS[kids.indexOf(k) % DEMO_PICKS.length].cls;
   try {
-    const to = new Date(), from = new Date(to.getTime() - 120 * 864e5), ymd = (t) => t.toISOString().slice(0, 10);
-    const rows = await TVApi.my_results(kid.roster_id, ymd(from), ymd(to));
-    if (!rows.length) { renderTop(); if (note) note.firstChild.textContent = "아직 받은 시험 결과가 없어요 — 아래는 시안 데이터예요 "; return; }
-    const lv = rows[rows.length - 1].level;
-    const avg = lv ? await TVApi.level_average(lv, ymd(from), ymd(to)) : [];
-    API = realStudent(kid, rows, avg);
-    ME.name = kid.student_name; ME.cls = rows[rows.length - 1].class_name;
-    TODAY = API.history[API.history.length - 1]; day = TODAY;
-    renderAll();
-    if (note) note.firstChild.textContent = "시험 결과는 매일 밤 학원 시트에서 옮겨 와요 ";
+    const me = real ? await showRealKid(kid) : showDemoKid(kid, idx);
+    rememberKid(kid, me);
+    // 퀴즈 · 복습 공통(TVP)은 이 화면을 열 때 이미 읽혔다 — 다른 아이로 읽혔으면 한 번만 다시 연다
+    if (window.TVP && (TVP.ME.name !== me.name || TVP.ME.cls !== me.cls)) {
+      let synced = null; try { synced = sessionStorage.getItem("tv-kid-sync"); } catch (err) { synced = kid.roster_id; }
+      if (synced !== kid.roster_id) { try { sessionStorage.setItem("tv-kid-sync", kid.roster_id); } catch (err) { /* 무시 */ } location.replace(location.href); return; }
+    }
   } catch (e) {
     if (e && e.code === "auth_required") { location.replace("d2_login.html"); return; }
-    renderTop(); if (note) note.firstChild.textContent = "시험 결과를 불러오지 못했어요 — 아래는 시안 데이터예요 ";
+    ME.display = kid.student_name;
+    const note = document.querySelector(".note"); if (note) note.firstChild.textContent = "시험 결과를 불러오지 못했어요 — 아래는 시안 데이터예요 ";
   }
+  renderKids(kids, kid, labelOf);
+  renderAll();
 });
