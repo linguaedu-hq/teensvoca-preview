@@ -162,6 +162,15 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:0;accent-co
 .proto{margin-top:40px;padding:10px 12px;border:1.5px dashed #cdbba0;border-radius:10px;font-size:13px;color:var(--mute)}
 .proto button,.proto a{min-height:36px;padding:0 6px;border:0;background:none;color:var(--b-ink);font-size:13px;text-decoration:underline;cursor:pointer}
 .is-shot .proto{display:none}
+/* 실제 모드 들어가기 전 관문(로그인 · 관리자 · 2단계 인증) — 같은 상자 결 */
+.gate{max-width:460px;margin:28px auto 0;padding:24px 22px}
+.gate h2{font-family:Jua;font-weight:400;font-size:20px;margin:0 0 6px;color:var(--brown)}
+.gate p{margin:0 0 12px;line-height:1.7}
+.gate ol{margin:0 0 12px;padding-left:20px;line-height:1.8}
+.gate .qr{display:block;width:184px;height:184px;margin:6px 0 10px;padding:8px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.gate .key{font-family:ui-monospace,Consolas,monospace;font-size:13px;letter-spacing:.04em;word-break:break-all;color:var(--mute)}
+.gate .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.gate input[type=text]{flex:0 1 180px;min-width:0;font-size:20px;letter-spacing:.2em;text-align:center}
 
 @media (max-width:900px){
   .md{grid-template-columns:1fr}
@@ -198,6 +207,7 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:0;accent-co
   <span class="me"><span class="nm">본원 · 직원01</span><a href="d2_login.html">나가기</a></span>
 </header>
 <div class="wrap">
+  <section class="box gate" id="gate" aria-live="polite" hidden></section>
   <div class="tabs" role="tablist" aria-label="확인 관리">
     <button class="tab" role="tab" id="t-pending" aria-controls="p-pending" aria-selected="true">확인 대기 <span class="cnt num" id="c-pending">–</span></button>
     <button class="tab" role="tab" id="t-linked" aria-controls="p-linked" aria-selected="false" tabindex="-1">연결된 학부모 <span class="cnt num" id="c-linked">–</span></button>
@@ -267,6 +277,8 @@ input[type=checkbox],input[type=radio]{width:20px;height:20px;margin:0;accent-co
   </aside>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" integrity="sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok" crossorigin="anonymous"></script>
+<script src="config.js"></script>
 <script src="api.js"></script>
 <script src="admin.js"></script>
 </body></html>

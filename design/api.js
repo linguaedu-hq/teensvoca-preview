@@ -1,7 +1,10 @@
 // 학부모 연결 · 확인 관리 — 화면이 부르는 데이터 호출을 이 파일 한 곳에 모은다.
-// 함수 이름 = docs/LINKING.md 의 RPC 이름, 돌려주는 꼴도 그대로. 지금은 가짜(이 기기 localStorage),
-// 실제판: 각 함수 몸통을 `const { data, error } = await sb.rpc("<이름>", { ...인자 }); if (error) throw error; return data;` 로 바꾼다(supabase-js · anon 키만).
-// 가짜 데이터에는 실명 · 실제 번호가 없다(학생NN · 학부모NN · 010-0000-00NN).
+// 함수 이름 = docs/LINKING.md 의 RPC 이름, 돌려주는 꼴도 그대로.
+// 두 갈래(config.js MODE):
+//   실제 — supabase-js v2(공식 CDN, 판 고정)로 Supabase RPC · Edge Function check-channel 을 부른다. publishable(anon) 키만.
+//   시안 — 이 기기 localStorage 가짜 데이터(실명 · 실제 번호 없음: 학생NN · 학부모NN · 010-0000-00NN).
+// 'auto' 면 카카오 로그인 세션이 있을 때만 실제. 화면은 TVApi.ready(→ "real" | "demo")를 기다린 뒤 시작한다.
+// 실제 갈래의 오류는 TVApi.TVError(code · userMessage)로 던진다 — 화면은 e.userMessage 를 그대로 보여 주면 된다.
 window.TVApi = (function () {
   const DB_KEY = "tv-fake-db-v1";
   const SESSION_KEY = "tv-kakao-session";
@@ -74,8 +77,7 @@ window.TVApi = (function () {
   const save = (d) => store.set(DB_KEY, d);
   const brief = (r) => ({ roster_id: r.id, student_name: r.student_name, school: r.school, grade: r.grade });
 
-  // ── 로그인 · 채널(Edge Function check-channel) ─────────────────────────
-  // 실제판: sb.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo } }) — 카카오 동의 화면에서 채널 추가 동의를 함께 받는다.
+  // ── 시안: 로그인 · 채널(실제 갈래는 아래 real) ─────────────────────────
   function signInWithKakao() {
     const s = { user_id: "g-me", display_name: "카카오 보호자", kakao_id: "k-2001", channel: "NONE" };
     store.set(SESSION_KEY, s);
@@ -216,7 +218,7 @@ window.TVApi = (function () {
     return wait({ active: d.roster.filter((r) => r.active).length, total: d.roster.length, last: clone(d.lastImport) }, 160);
   }
 
-  // ── 시안 전용(실제판에서 지움) ─────────────────────────────────────────────
+  // ── 시안 전용(시안 모드에서만 씀) ─────────────────────────────────────────────
   const demo = {
     reset() { store.del(DB_KEY); store.del(SESSION_KEY); },
     session(channel) { store.set(SESSION_KEY, { user_id: "g-me", display_name: "카카오 보호자", kakao_id: "k-2001", channel: channel || "NONE" }); },
@@ -233,8 +235,180 @@ window.TVApi = (function () {
     },
   };
 
-  return { normPhone, normName, showPhone, getSession, signInWithKakao, signOut, check_channel, openChannelAdd,
-    link_by_contact, link_siblings, my_children,
-    admin_pending_requests, admin_resolve_request, admin_unlink, admin_search_roster, admin_import_roster,
-    admin_linked_list, admin_roster_status, demo, DAILY_LIMIT };
+  // ── 실제(Supabase) ───────────────────────────────────────────────────────
+  const C = window.TVConfig || {};
+  const sb = (window.supabase && C.SUPABASE_URL && C.SUPABASE_PUBLISHABLE_KEY)
+    ? window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_PUBLISHABLE_KEY, {
+        auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+      })
+    : null;                                       // CDN 이 막혔거나 설정이 없으면 시안으로만 돈다
+
+  class TVError extends Error {
+    constructor(code, userMessage, cause) { super(code); this.code = code; this.userMessage = userMessage; this.cause = cause; }
+  }
+  const MSG = {
+    auth_required: "로그인이 풀렸어요. 처음 화면에서 다시 로그인해 주세요.",
+    kakao_required: "카카오로 로그인한 계정만 쓸 수 있어요.",
+    kakao_not_ready: "카카오 로그인 준비 중이에요 — 시안 모드로 볼게요.",
+    kakao_failed: "카카오 로그인을 마치지 못했어요. 다시 눌러 주세요.",
+    forbidden: "관리자만 볼 수 있는 화면이에요.",
+    mfa_required: "관리 화면은 인증 앱 확인(2단계)을 마쳐야 열려요.",
+    mfa_code_wrong: "인증 코드가 맞지 않아요. 앱에 보이는 6자리를 다시 넣어 주세요.",
+    mfa_failed: "인증 앱 등록을 시작하지 못했어요. 잠시 뒤 다시 해 주세요.",
+    channel_unavailable: "채널 확인 준비 중이에요. 잠시 뒤 다시 확인해 주세요.",
+    channel_id_missing: "채널 추가 준비 중이에요. 카카오톡에서 「링구아어학원 전국본원」 채널을 찾아 추가해 주세요.",
+    invalid_input: "보낸 내용에 맞지 않는 값이 있어요. 다시 확인해 주세요.",
+    network: "인터넷 연결을 확인하고 다시 해 주세요.",
+    server: "잠시 문제가 생겼어요. 잠시 뒤 다시 해 주세요.",
+  };
+  const fail = (code, cause) => new TVError(code, MSG[code] || MSG.server, cause);
+
+  // PostgREST · GoTrue 오류 → 화면용 코드(서버 메시지 원문은 화면에 내지 않는다)
+  function fromPg(error) {
+    const m = String((error && error.message) || "").toLowerCase(), c = error && error.code;
+    if (m.includes("mfa required")) return fail("mfa_required", error);
+    if (m.includes("kakao login required")) return fail("kakao_required", error);
+    if (m === "forbidden") return fail("forbidden", error);
+    if (c === "28000" || m.includes("not authenticated") || m.includes("permission denied for function") || m.includes("jwt")) return fail("auth_required", error);
+    if (c === "22023" || c === "22P02") return fail("invalid_input", error);
+    if (m.includes("failed to fetch") || m.includes("networkerror")) return fail("network", error);
+    return fail("server", error);
+  }
+  async function rpc(name, args) {
+    let res;
+    try { res = await sb.rpc(name, args || {}); } catch (e) { throw fail("network", e); }
+    if (res.error) throw fromPg(res.error);
+    return res.data;
+  }
+
+  let realSession = null;                        // { user_id, display_name, access_token }
+  function toSession(s) {
+    if (!s || !s.user) return null;
+    const md = s.user.user_metadata || {};
+    return { user_id: s.user.id, display_name: md.name || md.nickname || md.full_name || md.preferred_username || "카카오 보호자", access_token: s.access_token };
+  }
+  const forcedDemo = (() => { try { return new URLSearchParams(location.search).has("demo"); } catch (e) { return false; } })();
+
+  // 모드 정하기: demo | real | auto(세션이 있으면 real). 카카오에서 돌아온 ?code= 는 supabase-js 가 여기서 세션으로 바꾼다.
+  const ready = (async () => {
+    if (!sb || forcedDemo || C.MODE === "demo") return "demo";
+    try {
+      const { data } = await sb.auth.getSession();
+      realSession = toSession(data && data.session);
+    } catch (e) { realSession = null; }
+    if (realSession) {
+      sb.auth.onAuthStateChange((_ev, s) => { realSession = toSession(s); });
+      return "real";
+    }
+    return C.MODE === "real" ? "real" : "demo";
+  })();
+  let MODE_NOW = "demo";
+  ready.then((m) => { MODE_NOW = m; });
+  const isReal = () => MODE_NOW === "real";
+
+  // 카카오가 Supabase 에서 켜져 있는지(공개 설정 · publishable 키로 읽음). 못 읽으면 꺼진 것으로 본다.
+  async function kakaoEnabled() {
+    try {
+      const r = await fetch(`${C.SUPABASE_URL}/auth/v1/settings`, { headers: { apikey: C.SUPABASE_PUBLISHABLE_KEY } });
+      if (!r.ok) return false;
+      const j = await r.json();
+      return !!(j && j.external && j.external.kakao);
+    } catch (e) { return false; }
+  }
+
+  const real = {
+    getSession: () => realSession,
+    async signInWithKakao() {
+      if (!sb || !(await kakaoEnabled())) throw fail("kakao_not_ready");
+      const redirectTo = new URL("d2_login.html", location.href).href.split(/[?#]/)[0];   // 배포 = location.origin + /design/d2_login.html
+      const { error } = await sb.auth.signInWithOAuth({ provider: "kakao", options: { redirectTo, scopes: "profile_nickname" } });
+      if (error) throw fail(/provider is not enabled|unsupported provider/i.test(error.message) ? "kakao_not_ready" : "kakao_failed", error);
+      return new Promise(() => {});              // 브라우저가 카카오로 넘어간다
+    },
+    async signOut() {
+      try { await sb.auth.signOut(); } catch (e) { /* 이미 풀린 세션 — 이 기기 세션만 지우면 됨 */ }
+      realSession = null; store.del(SESSION_KEY);
+      return true;
+    },
+    // Edge Function check-channel(POST · 로그인 JWT). 비밀값이 아직 없거나 카카오 조회가 실패하면 channel_unavailable — 통과시키지 않는다.
+    async check_channel() {
+      const { data } = await sb.auth.getSession();
+      const token = data && data.session && data.session.access_token;
+      if (!token) throw fail("auth_required");
+      let r;
+      try {
+        r = await fetch(`${C.SUPABASE_URL}/functions/v1/check-channel`, {
+          method: "POST", headers: { Authorization: `Bearer ${token}`, apikey: C.SUPABASE_PUBLISHABLE_KEY },
+        });
+      } catch (e) { throw fail("channel_unavailable", e); }
+      if (r.status === 401) throw fail("auth_required");
+      if (r.status === 400) throw fail("kakao_required");
+      if (!r.ok) throw fail("channel_unavailable");
+      const j = await r.json().catch(() => null);
+      if (!j || !j.relation) throw fail("channel_unavailable");
+      return { relation: j.relation, checked_at: j.checked_at, cached: !!j.cached };
+    },
+    // 카카오 채널 친구 추가 창을 연다. 결과는 check_channel 로만 믿는다.
+    async openChannelAdd() {
+      const id = String(C.KAKAO_CHANNEL_PUBLIC_ID || "");
+      if (!/^_[A-Za-z0-9]+$/.test(id)) throw fail("channel_id_missing");
+      const w = window.open(`https://pf.kakao.com/${id}/friend`, "_blank", "noopener");
+      if (!w) location.href = `https://pf.kakao.com/${id}/friend`;
+      return true;
+    },
+    link_by_contact: (p_guardian_name, p_phone, p_child_name) => rpc("link_by_contact", { p_guardian_name, p_phone: normPhone(p_phone), p_child_name }),
+    link_siblings: (p_roster_ids) => rpc("link_siblings", { p_roster_ids }),
+    my_children: () => rpc("my_children"),
+    admin_pending_requests: (p_limit = 100, p_offset = 0) => rpc("admin_pending_requests", { p_limit, p_offset }),
+    admin_resolve_request: (p_request_id, p_roster_ids, p_approve, p_note) => rpc("admin_resolve_request", { p_request_id, p_roster_ids: p_roster_ids || [], p_approve: !!p_approve, p_note: p_note || null }),
+    admin_unlink: (p_guardian_user_id, p_roster_id, p_block = false, p_reason = null) => rpc("admin_unlink", { p_guardian_user_id, p_roster_id, p_block, p_reason }),
+    admin_search_roster: (p_q) => rpc("admin_search_roster", { p_q: p_q || "" }),
+    admin_import_roster: (p_rows, p_dry_run = false, p_force = false) => rpc("admin_import_roster", { p_rows, p_dry_run, p_force }),
+    admin_linked_list: (p_q, p_only_recheck = false) => rpc("admin_linked_list", { p_q: p_q || null, p_only_recheck }),
+    admin_roster_status: () => rpc("admin_roster_status"),
+  };
+
+  // 관리자 2단계 인증(TOTP) — 관리자 RPC 는 aal2 세션만 받는다
+  const mfa = {
+    async level() {
+      const { data, error } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (error) throw fromPg(error);
+      const f = await sb.auth.mfa.listFactors();
+      if (f.error) throw fromPg(f.error);
+      const verified = (f.data.totp || []).find((x) => x.status === "verified") || null;
+      return { current: data.currentLevel, next: data.nextLevel, factorId: verified ? verified.id : null };
+    },
+    async enroll() {
+      const f = await sb.auth.mfa.listFactors();
+      if (f.error) throw fail("mfa_failed", f.error);
+      // 끝내지 못한(확인 안 된) 앞 등록은 치우고 새로 — 같은 이름 충돌 방지
+      for (const x of (f.data.all || []).filter((x) => x.factor_type === "totp" && x.status !== "verified")) {
+        await sb.auth.mfa.unenroll({ factorId: x.id });
+      }
+      const { data, error } = await sb.auth.mfa.enroll({ factorType: "totp", friendlyName: "TeensVoca 확인 관리" });
+      if (error || !data) throw fail("mfa_failed", error);
+      return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret };
+    },
+    async verify(factorId, code) {
+      const { error } = await sb.auth.mfa.challengeAndVerify({ factorId, code: String(code || "").replace(/\D/g, "") });
+      if (error) throw fail("mfa_code_wrong", error);
+      const { data } = await sb.auth.getSession(); realSession = toSession(data && data.session);
+      return true;
+    },
+  };
+
+  // ── 화면이 부르는 함수(이름 그대로) — 모드에 따라 실제 / 시안 ───────────────
+  const fake = { getSession, signInWithKakao, signOut, check_channel, openChannelAdd, link_by_contact, link_siblings, my_children,
+    admin_pending_requests, admin_resolve_request, admin_unlink, admin_search_roster, admin_import_roster, admin_linked_list, admin_roster_status };
+  const route = (name) => async (...args) => { const m = await ready; return (m === "real" ? real : fake)[name](...args); };
+  const api = {};
+  Object.keys(fake).forEach((k) => { if (k !== "getSession") api[k] = route(k); });
+  api.getSession = () => (isReal() ? real.getSession() : getSession());   // ready 뒤에 부른다
+  // 카카오 단추: 모드와 상관없이 실제 카카오를 먼저 시도 → 준비 안 됐으면 kakao_not_ready(화면이 시안으로 넘김)
+  api.signInWithKakao = () => real.signInWithKakao();
+  api.signInDemo = () => signInWithKakao();
+  api.signOut = async () => { await ready; if (sb) await real.signOut(); return signOut(); };
+
+  return Object.assign(api, { normPhone, normName, showPhone, ready, isReal, mfa, TVError, demo, DAILY_LIMIT,
+    phone: C.BRANCH_PHONE || "051-000-0000" });
 })();

@@ -75,7 +75,7 @@
         <div><dt>전화</dt><dd class="num">${esc(A.showPhone(r.phone))}</dd></div>
         <div><dt>자녀 이름</dt><dd>${esc(r.child_name)}</dd></div>
         <div><dt>카카오 이름</dt><dd>${esc(r.guardian_display_name || "–")}</dd></div>
-        <div><dt>접수 번호</dt><dd class="num">${esc(r.id.replace(/^q-/, "").toUpperCase())}</dd></div>
+        <div><dt>접수 번호</dt><dd class="num">${esc(String(r.id).replace(/^q-/, "").slice(0, 8).toUpperCase())}</dd></div>
       </dl>
       <h3>명단에서 찾기</h3>
       <div class="find">
@@ -308,11 +308,18 @@
       const rows = U.ok.map((r) => Object.fromEntries(COLS.map(([k]) => [k, k === "guardian_phone" ? A.normPhone(r[k]) : r[k]])));
       // 확인 필요 줄도 학생 번호가 있으면 keep 으로 보낸다 — 서버는 고치지도, 「빠짐」으로 돌리지도 않는다
       [...new Set(U.rows.filter((r) => r._bad.length && r.aca_student_no).map((r) => r.aca_student_no))].forEach((no) => rows.push({ aca_student_no: no, keep: true }));
-      const res = await A.admin_import_roster(rows);
+      const sure = $("pv-sure");
+      const res = await A.admin_import_roster(rows, false, !!(sure && sure.checked));
+      if (res && res.ok === false) {
+        $("u-err").textContent = res.error === "too_many_deactivations"
+          ? `파일에 없는 학생이 너무 많아요(빠짐 ${res.deactivated}명 · 지금 ${res.active}명). 전체 원생 명단인지 확인해 주세요.`
+          : "명단을 넣지 못했어요. 파일을 확인해 주세요.";
+        return;
+      }
       $("res-dl").innerHTML = `<div><dt>새로</dt><dd class="num">${res.inserted}</dd></div><div><dt>고침</dt><dd class="num">${res.updated}</dd></div><div><dt>빠짐</dt><dd class="num">${res.deactivated}</dd></div>${res.kept ? `<div><dt>그대로 둠</dt><dd class="num">${res.kept}</dd></div>` : ""}<div><dt>파일</dt><dd style="font-size:15px">${esc(U.file)}</dd></div>`;
       $("pv").hidden = true; $("res").hidden = false; $("file").value = "";
       toast("명단을 넣었어요."); loadNow();
-    } catch (e) { $("u-err").textContent = "명단을 넣지 못했어요. 다시 눌러 주세요."; }
+    } catch (e) { $("u-err").textContent = (e && e.code === "invalid_input") ? "명단을 넣지 못했어요 — 학생 번호 겹침 · 빈 칸 · 전화 꼴을 확인해 주세요." : "명단을 넣지 못했어요. 다시 눌러 주세요."; }
     finally { busy(b, false); b.textContent = "명단에 넣기"; }
   };
   $("pv-cancel").onclick = () => { $("pv").hidden = true; $("file").value = ""; $("u-err").textContent = ""; $("drop").focus(); };
@@ -333,9 +340,78 @@
   $("p-reset").onclick = () => { A.demo.reset(); location.reload(); };
 
   const qs = new URLSearchParams(location.search), tab = TABS.includes(qs.get("tab")) ? qs.get("tab") : "pending";
-  if (qs.has("demo")) { document.documentElement.classList.add("is-shot"); A.demo.reset(); }
-  loadPending(); refreshCounts(); selectTab(tab);
-  if (qs.get("demo") === "preview") setTimeout(() => preview(A.demo.sampleFile(), "아카_원생명단_예시.csv"), 250);
-  if (qs.get("demo") === "result") setTimeout(() => { preview(A.demo.sampleFile(), "아카_원생명단_예시.csv"); $("pv-go").click(); }, 250);
-  if (qs.get("demo") === "pick") setTimeout(() => { pick(P.list[0] && P.list[0].id, true); }, 500);
+  function start() {
+    if (qs.has("demo")) { document.documentElement.classList.add("is-shot"); A.demo.reset(); }
+    loadPending(); refreshCounts(); selectTab(tab);
+    if (qs.get("demo") === "preview") setTimeout(() => preview(A.demo.sampleFile(), "아카_원생명단_예시.csv"), 250);
+    if (qs.get("demo") === "result") setTimeout(() => { preview(A.demo.sampleFile(), "아카_원생명단_예시.csv"); $("pv-go").click(); }, 250);
+    if (qs.get("demo") === "pick") setTimeout(() => { pick(P.list[0] && P.list[0].id, true); }, 500);
+  }
+
+  // ── 실제 모드 관문: 로그인 → 관리자 → 2단계 인증(TOTP · aal2) ────────────────
+  const G = () => $("gate");
+  function gateOn(on) {
+    G().hidden = !on; document.querySelector(".tabs").hidden = on;
+    if (on) TABS.forEach((n) => { $("p-" + n).hidden = true; });
+  }
+  function gateMsg(title, text, action) {
+    gateOn(true);
+    G().innerHTML = `<h2></h2><p></p>${action ? `<div class="row"><a class="btn" href="${action.href}">${esc(action.label)}</a></div>` : ""}`;
+    G().querySelector("h2").textContent = title; G().querySelector("p").textContent = text;
+  }
+  function codeForm(factorId, done) {
+    G().insertAdjacentHTML("beforeend", `<label for="g-code">인증 앱의 6자리</label>
+      <div class="row"><input type="text" id="g-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-describedby="g-msg"><button class="btn" id="g-go" type="button">확인</button></div>
+      <p class="err" id="g-msg" role="alert"></p>`);
+    const go = async () => {
+      const b = $("g-go"); if (b.getAttribute("aria-busy")) return;
+      const code = $("g-code").value.replace(/\D/g, "");
+      if (code.length !== 6) { $("g-msg").textContent = "6자리 숫자를 넣어 주세요."; $("g-code").focus(); return; }
+      busy(b, true); $("g-msg").textContent = "";
+      try { await A.mfa.verify(factorId, code); done(); }
+      catch (e) { busy(b, false); $("g-msg").textContent = (e && e.userMessage) || "확인하지 못했어요. 다시 해 주세요."; $("g-code").select(); }
+    };
+    $("g-go").onclick = go;
+    $("g-code").onkeydown = (e) => { if (e.key === "Enter") go(); };
+    $("g-code").focus();
+  }
+  function mfaGate() {
+    return new Promise(async (resolve) => {
+      gateOn(true);
+      const done = async () => { try { await A.admin_roster_status(); gateOn(false); resolve(true); } catch (e) { gateMsg("열지 못했어요", (e && e.userMessage) || "잠시 뒤 다시 해 주세요."); resolve(false); } };
+      try {
+        const lv = await A.mfa.level();
+        if (lv.factorId) {
+          G().innerHTML = `<h2>2단계 확인</h2><p>휴대폰 인증 앱(Google Authenticator 등)에 보이는 「TeensVoca」 6자리를 넣어 주세요.</p>`;
+          codeForm(lv.factorId, done);
+          return;
+        }
+        const en = await A.mfa.enroll();
+        G().innerHTML = `<h2>인증 앱 등록 (처음 한 번)</h2>
+          <ol><li>휴대폰에서 인증 앱(Google Authenticator · Microsoft Authenticator 등)을 엽니다.</li><li>아래 QR 을 찍어 계정을 더합니다.</li><li>앱에 뜬 6자리를 넣습니다.</li></ol>
+          <img class="qr" id="g-qr" alt="인증 앱 등록용 QR"><p class="key">QR 을 못 찍으면 이 키를 앱에 직접 넣으세요: <span id="g-key"></span></p>`;
+        $("g-qr").src = en.qr; $("g-key").textContent = en.secret;
+        codeForm(en.factorId, done);
+      } catch (e) { gateMsg("2단계 확인을 시작하지 못했어요", (e && e.userMessage) || "잠시 뒤 다시 해 주세요.", { href: "d2_admin.html", label: "다시 하기" }); resolve(false); }
+    });
+  }
+  async function gate() {
+    document.querySelectorAll(".proto").forEach((x) => { x.style.display = "none"; });
+    document.querySelector(".queue-h span").textContent = "먼저 들어온 순";
+    const me = A.getSession();
+    if (!me) { gateMsg("로그인이 필요해요", "카카오로 로그인한 관리자만 쓸 수 있어요.", { href: "d2_login.html", label: "로그인 화면으로" }); return false; }
+    document.querySelector(".bar .nm").textContent = `본원 · ${me.display_name}`;
+    const out = document.querySelector(".bar .me a");
+    out.onclick = async (e) => { e.preventDefault(); try { await A.signOut(); } finally { location.href = "d2_login.html"; } };
+    try { await A.admin_roster_status(); return true; }
+    catch (e) {
+      const code = e && e.code;
+      if (code === "mfa_required") return mfaGate();
+      if (code === "forbidden" || code === "kakao_required") { gateMsg("관리자만 볼 수 있어요", "이 카카오 계정은 관리자로 등록되어 있지 않아요. 본원에 관리자 등록을 요청해 주세요."); return false; }
+      if (code === "auth_required") { gateMsg("로그인이 필요해요", "로그인이 풀렸어요. 다시 로그인해 주세요.", { href: "d2_login.html", label: "로그인 화면으로" }); return false; }
+      gateMsg("불러오지 못했어요", (e && e.userMessage) || "잠시 뒤 다시 해 주세요.", { href: "d2_admin.html", label: "다시 하기" });
+      return false;
+    }
+  }
+  A.ready.then(async (mode) => { if (mode === "real" && !(await gate())) return; start(); });
 })();
